@@ -1,0 +1,25 @@
+<div class="calendar">
+  <div class="month-info">
+    <button [class.disabled]="isPassed(-1)" (click)="moveMonth(-1)">&lt;</button>
+    <p>{{ currentYear }}.{{ currentMonth }}</p>
+    <button (click)="moveMonth(+1)">&gt;</button>
+  </div>
+
+  <ng-content></ng-content>
+
+  <div class="week">
+    <p *ngFor="let day of week">{{day}}</p>
+  </div>
+
+  <div class="date-table" *ngFor="let week of calendar">
+    <div class="date-box" *ngFor="let date of week" [class.disabled]="isPassed(date.date)" (click)="details(date)">
+      <p *ngIf="date.date !== 0" [class.holiday]="date.isHoliday">
+        {{ date.date }}
+      </p>
+      <ng-container *ngIf="!isPassed(date.date) && date.date !== 0">
+        <manager-content-food [date]="getDate(date.date)"></manager-content-food>
+        <manager-content-flat-bench [date]="getDate(date.date)"></manager-content-flat-bench>
+      </ng-container>
+    </div>
+  </div>
+</div>

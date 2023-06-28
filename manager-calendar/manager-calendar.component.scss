@@ -1,0 +1,80 @@
+.calendar {
+    margin: 3rem 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    p {
+        font-size: 0.8rem;
+    }
+
+    .month-info {
+        display: flex;
+        justify-content: center;
+
+        button {
+            background-color: transparent;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin: 0.4rem 1rem;
+        }
+    }
+
+    .week {
+        display: flex;
+        justify-content: space-around;
+        border-bottom: 1px solid #ddd;
+
+        p {
+            text-align: center;
+
+            &:first-of-type {
+                color: #e34c4c;
+            }
+
+            &:last-of-type {
+                color: #e34c4c;
+            }
+        }
+    }
+
+    .date-table {
+        display: flex;
+        justify-content: space-around;
+        min-height: 5rem;
+
+        .date-box {
+            width: 100%;
+
+            .holiday {
+                color: #e34c4c;
+            }
+        }
+
+        p {
+            text-align: center;
+        }
+    }
+
+    .disabled {
+        pointer-events: none;
+        opacity: 0.3;
+    }
+}
+
+p.content {
+    margin: 0.1rem;
+    text-align: center;
+    font-size: 0.5rem;
+    color: #5eb917;
+
+    &.expired {
+        color: #e34c4c;
+    }
+
+}

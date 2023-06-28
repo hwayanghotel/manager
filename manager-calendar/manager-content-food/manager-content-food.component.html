@@ -1,0 +1,3 @@
+<p class="content" *ngFor="let value of data" [class.expired]="value.expired">
+	식사<span>{{getText(value.text)}},{{value.ratio}}</span>
+</p>

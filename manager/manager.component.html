@@ -1,0 +1,15 @@
+<mat-form-field *ngIf="!permission" [style.width]="'100%'">
+	<mat-label>관리자 비밀번호</mat-label>
+	<input [style.text-align]="'center'" matInput type="number" [(ngModel)]="password">
+</mat-form-field>
+
+<div *ngIf="permission">
+	<mat-tab-group mat-align-tabs="start">
+		<mat-tab label="달력">
+			<manager-calendar (moveTable)="selectTab()"></manager-calendar>
+		</mat-tab>
+		<mat-tab label="표">
+			<manager-table></manager-table>
+		</mat-tab>
+	</mat-tab-group>
+</div>
