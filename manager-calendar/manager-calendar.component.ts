@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Output } from "@angular/core";
+import { ManagerFilter } from "manager/manager-table/manager-table.component";
 import { CalendarComponent } from "reservation/calendar/calendar.component";
 import { HolidayService } from "reservation/service/holiday.service";
-import { ReservationService } from "reservation/service/reservation.service";
+import * as Moment from "moment";
 
 @Component({
     selector: "manager-calendar",
@@ -11,17 +12,13 @@ import { ReservationService } from "reservation/service/reservation.service";
 export class ManagerCalendarComponent extends CalendarComponent {
     @Output() moveTable = new EventEmitter<void>();
 
-    constructor(private holydayService: HolidayService, private reservationService: ReservationService) {
+    constructor(private holydayService: HolidayService) {
         super(holydayService);
     }
 
     details(date: any) {
-        this.reservationService.setReservationForm(
-            {
-                날짜: `${this.currentYear}-${this.currentMonth}-${date.date}`,
-            },
-            true
-        );
+        ManagerFilter.date[0] = ManagerFilter.date[1] = Moment(`${this.currentYear}-${this.currentMonth}-${date.date}`);
+
         this.moveTable.emit();
     }
 }

@@ -1,12 +1,30 @@
-<mat-form-field>
-	<mat-label>Enter a date range</mat-label>
-	<mat-date-range-input [rangePicker]="picker">
-		<input matStartDate placeholder="Start date" [(ngModel)]="startDate">
-		<input matEndDate placeholder="End date" [(ngModel)]="endDate">
-	</mat-date-range-input>
-	<mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-	<mat-date-range-picker #picker></mat-date-range-picker>
-</mat-form-field>
+<mat-card>
+	<mat-card-header (click)="filter.open = !filter.open">
+		<mat-card-title>Filter</mat-card-title>
+	</mat-card-header>
+	<mat-card-content *ngIf="filter.open">
+		<mat-card-subtitle>날짜 범위 선택</mat-card-subtitle>
+		<mat-form-field>
+			<mat-label>Enter a date range</mat-label>
+			<mat-date-range-input [rangePicker]="picker">
+				<input matStartDate placeholder="Start date" [(ngModel)]="filter.date[0]">
+				<input matEndDate placeholder="End date" [(ngModel)]="filter.date[1]">
+			</mat-date-range-input>
+			<mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+			<mat-date-range-picker #picker></mat-date-range-picker>
+		</mat-form-field>
+
+		<mat-card-subtitle>상태 선택</mat-card-subtitle>
+		<mat-checkbox [(ngModel)]="statePrepare">대기중</mat-checkbox>
+		<mat-checkbox [(ngModel)]="stateComplete">예약완료</mat-checkbox>
+		<mat-checkbox [(ngModel)]="stateCancel">취소</mat-checkbox>
+
+	</mat-card-content>
+	<mat-card-actions [align]="'end'" *ngIf="filter.open">
+		<button mat-button (click)="initFilterAndList()">초기화</button>
+		<button mat-button (click)="applyFilter()">적용</button>
+	</mat-card-actions>
+</mat-card>
 
 <table mat-table [dataSource]="dataSource" matSort>
 	<ng-container matColumnDef="visit">

@@ -1,8 +1,9 @@
 import { Component, ViewChild } from "@angular/core";
 import { MatSort } from "@angular/material/sort";
 import { MatTableDataSource } from "@angular/material/table";
-import { IReservationForm, ReservationService } from "reservation/service/reservation.service";
+import { IReservationForm } from "reservation/service/reservation.service";
 import * as Moment from "moment";
+import { DBService, IDBService } from "reservation/service/DB.service";
 
 interface Table {
     id: string;
@@ -15,6 +16,19 @@ interface Table {
     memo: string;
 }
 
+interface Filter {
+    open: boolean;
+    date: Moment.Moment[];
+    states: string[];
+}
+
+const initFilter: Filter = {
+    open: true,
+    date: [],
+    states: ["대기중", "예약완료"],
+};
+export let ManagerFilter: Filter = JSON.parse(JSON.stringify(initFilter));
+
 @Component({
     selector: "manager-table",
     templateUrl: "./manager-table.component.html",
@@ -23,24 +37,62 @@ export class ManagerTableComponent {
     @ViewChild(MatSort) sort: MatSort;
     displayedColumns: string[] = ["visit", "date", "type", "name", "status", "order", "memo"];
     dataSource: MatTableDataSource<any>;
+    db: IDBService[] = [];
+    filter = ManagerFilter;
 
-    startDate: Moment.Moment;
-    endDate: Moment.Moment;
-
-    constructor(private reservationService: ReservationService) {
-        this.setList();
-        this.reservationService.formData$.subscribe((form) => {
-            if (form["날짜"]) {
-                this.startDate = this.endDate = Moment(form["날짜"]);
-            }
+    constructor(private DBService: DBService) {
+        this.DBService.firebaseStore$.subscribe((db) => {
+            this.db = db as IDBService[];
+            this.db.sort((a, b) => this._sortList(a, b));
+            this.setList();
         });
+        this.filter = ManagerFilter;
+    }
+
+    get statePrepare(): boolean {
+        return ManagerFilter.states.includes("대기중");
+    }
+    set statePrepare(value: boolean) {
+        this._setState(value, "대기중");
+    }
+
+    get stateComplete(): boolean {
+        return ManagerFilter.states.includes("예약완료");
+    }
+    set stateComplete(value: boolean) {
+        this._setState(value, "예약완료");
+    }
+
+    get stateCancel(): boolean {
+        return ManagerFilter.states.includes("취소");
+    }
+    set stateCancel(value: boolean) {
+        this._setState(value, "취소");
+    }
+
+    _setState(toggle: boolean, value: string) {
+        if (toggle) {
+            ManagerFilter.states.push(value);
+        } else {
+            ManagerFilter.states = ManagerFilter.states.filter((item) => item !== value);
+        }
+    }
+
+    initFilterAndList() {
+        ManagerFilter = JSON.parse(JSON.stringify(initFilter));
+        this.filter = ManagerFilter;
+        this.setList();
+    }
+
+    applyFilter() {
+        this.setList();
     }
 
     private async setList() {
-        let list = await this.reservationService.search(undefined, ["날짜", "상태"]);
         let result: Table[] = [];
-        list.sort((a, b) => this._sortList(a, b));
-        list.forEach((model) => {
+        const db = this._getFilteredDB();
+
+        db.forEach((model) => {
             let item: Table = {
                 id: model.id,
                 visit: false,
@@ -86,7 +138,21 @@ export class ManagerTableComponent {
         return 0; // 동일한 경우 유지
     }
 
-    _getOrder(model: IReservationForm): string {
+    private _getFilteredDB(): IDBService[] {
+        let db: IDBService[] = JSON.parse(JSON.stringify(this.db));
+        if (this.filter.date[0]) {
+            db = db.filter((v) => Moment(v["날짜"]) >= this.filter.date[0]);
+        }
+        if (this.filter.date[1]) {
+            db = db.filter((v) => Moment(v["날짜"]) <= this.filter.date[1]);
+        }
+        if (this.filter.states.length > 0) {
+            db = db.filter((v) => this.filter.states.includes(v["상태"]));
+        }
+        return db;
+    }
+
+    private _getOrder(model: IReservationForm): string {
         let order: string = "";
         if (model["평상"]) {
             order += `평상:${model["평상"]},`;
