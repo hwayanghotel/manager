@@ -1,3 +1,8 @@
+mat-card {
+    margin-bottom: 1rem;
+    background-color: rgba(242, 242, 242, 0.2);
+}
+
 .filter-box {
     display: flex;
 
@@ -10,4 +15,21 @@
     .filter-box {
         flex-direction: column;
     }
+}
+
+button.main-button {
+    margin: 0.3rem;
+
+    &.off {
+        background-color: white !important;
+        color: black;
+    }
+}
+
+tr:hover {
+    background: whitesmoke;
+}
+
+tr:not(.example-expanded-row):active {
+    background: #efefef;
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { MatTabGroup } from "@angular/material/tabs";
 import { ActivatedRoute } from "@angular/router";
+import { ManagerService } from "manager/manager.service";
 import { DBService, IDBService } from "reservation/service/DB.service";
 
 @Component({
@@ -12,7 +13,6 @@ export class ManagerComponent implements OnInit {
     @ViewChild(MatTabGroup) tabGroup: MatTabGroup;
     open: boolean = true;
     today = `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`;
-    permission: boolean = false;
     nyBaeksuk = 0;
     baeksuk = 0;
     mushroom = 0;
@@ -20,7 +20,7 @@ export class ManagerComponent implements OnInit {
     cars = 0;
     guests = 0;
 
-    constructor(private route: ActivatedRoute, private DBService: DBService) {
+    constructor(private route: ActivatedRoute, private DBService: DBService, private managerService: ManagerService) {
         this.DBService.firebaseStore$.subscribe((db) => {
             const dailyData = db.filter((v) => v["날짜"] === this.today);
             this._setIndicators(dailyData);
@@ -48,9 +48,13 @@ export class ManagerComponent implements OnInit {
         this.route.queryParamMap.subscribe((params) => {
             const id = params.get("id");
             if (id) {
-                this.password = Number(id);
+                this.managerService.checkPermission(Number(id));
             }
         });
+    }
+
+    get permission(): boolean {
+        return this.managerService.permission;
     }
 
     get password(): number {
@@ -59,16 +63,9 @@ export class ManagerComponent implements OnInit {
 
     set password(value: number) {
         this._password = value;
-        this._checkPermission();
+        this.managerService.checkPermission(value);
     }
     private _password: number;
-
-    private _checkPermission() {
-        const answer = 828;
-        if (this._password === answer) {
-            this.permission = true;
-        }
-    }
 
     selectTab() {
         this.tabGroup.selectedIndex = 1;

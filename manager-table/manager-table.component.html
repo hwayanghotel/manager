@@ -1,8 +1,21 @@
-<mat-card>
-	<mat-card-header (click)="filter.open = !filter.open">
+<mat-form-field [style.margin-right]="'1rem'">
+	<mat-label>빠른검색</mat-label>
+	<input matInput (keyup)="searchInput($event)" placeholder="Ex. ium" #input>
+</mat-form-field>
+<button class="main-button" mat-raised-button color="primary" (click)="filter.open = !filter.open">Filter</button>
+<button class="main-button" mat-raised-button color="primary" (click)="addForm()">추가</button>
+<button class="main-button" mat-raised-button color="warn" [class.off]="!editMode"
+		(click)="editMode = !editMode">수정({{editMode}})</button>
+<button class="main-button" mat-raised-button color="warn" [class.off]="!deleteMode"
+		(click)="changeDeleteMode()">삭제({{deleteMode}})</button>
+<button class="main-button" mat-raised-button color="warn" *ngIf="deleteMode"
+		(click)="deleteForm()">정말로삭제하기({{deleteList.length}})</button>
+
+<mat-card *ngIf="filter.open">
+	<mat-card-header>
 		<mat-card-title>Filter</mat-card-title>
 	</mat-card-header>
-	<mat-card-content *ngIf="filter.open">
+	<mat-card-content>
 		<div class="filter-box">
 			<div class="filter">
 				<mat-card-subtitle>날짜 범위 선택</mat-card-subtitle>
@@ -22,8 +35,10 @@
 
 			<div class="filter">
 				<mat-card-subtitle>상태 선택</mat-card-subtitle>
-				<mat-checkbox [(ngModel)]="statePrepare">대기중</mat-checkbox>
-				<mat-checkbox [(ngModel)]="stateComplete">예약완료</mat-checkbox>
+				<mat-checkbox [(ngModel)]="statePrepare">대기</mat-checkbox>
+				<mat-checkbox [(ngModel)]="stateEdit">수정</mat-checkbox>
+				<mat-checkbox [(ngModel)]="stateComplete">예약</mat-checkbox>
+				<mat-checkbox [(ngModel)]="stateVisited">방문</mat-checkbox>
 				<mat-checkbox [(ngModel)]="stateCancel">취소</mat-checkbox>
 			</div>
 		</div>
@@ -44,46 +59,48 @@
 			</mat-form-field>
 		</div>
 	</mat-card-content>
-	<mat-card-actions [align]="'end'" *ngIf="filter.open">
+	<mat-card-actions [align]="'end'">
 		<button mat-button (click)="initFilterAndList()">초기화</button>
 		<button mat-button (click)="applyFilter()">적용</button>
 	</mat-card-actions>
 </mat-card>
 
 <table mat-table [dataSource]="dataSource" matSort>
-	<ng-container matColumnDef="visit">
-		<th mat-header-cell *matHeaderCellDef mat-sort-header>방문</th>
-		<td mat-cell *matCellDef="let element"> {{element.visit}} </td>
+	<ng-container matColumnDef="status">
+		<th mat-header-cell *matHeaderCellDef mat-sort-header>상태</th>
+		<td mat-cell *matCellDef="let element" [matMenuTriggerFor]="menu">
+			{{element.status}}<span *ngIf="element.type === '평상' && element.money">({{element.money | number}}원)</span>
+			<mat-menu #menu="matMenu">
+				<button mat-menu-item *ngIf="element.status !== '예약'" (click)="clickStatus(element, '예약')">예약</button>
+				<button mat-menu-item *ngIf="element.status !== '방문'" (click)="clickStatus(element, '방문')">방문</button>
+				<button mat-menu-item *ngIf="element.status !== '취소'" (click)="clickStatus(element, '취소')">취소</button>
+			</mat-menu>
+		</td>
 	</ng-container>
 
 	<ng-container matColumnDef="date">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>날짜</th>
-		<td mat-cell *matCellDef="let element"> {{element.date}} </td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)"> {{element.date}} </td>
 	</ng-container>
 
 	<ng-container matColumnDef="type">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>유형</th>
-		<td mat-cell *matCellDef="let element"> {{element.type}} </td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)"> {{element.type}} </td>
 	</ng-container>
 
 	<ng-container matColumnDef="name">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>이름</th>
-		<td mat-cell *matCellDef="let element"> {{element.name}} </td>
-	</ng-container>
-
-	<ng-container matColumnDef="status">
-		<th mat-header-cell *matHeaderCellDef mat-sort-header>상태</th>
-		<td mat-cell *matCellDef="let element">{{element.status}}</td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)"> {{element.name}} </td>
 	</ng-container>
 
 	<ng-container matColumnDef="order">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>주문</th>
-		<td mat-cell *matCellDef="let element">{{element.order}}</td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">{{element.order}}</td>
 	</ng-container>
 
 	<ng-container matColumnDef="memo">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>메모</th>
-		<td mat-cell *matCellDef="let element">{{element.memo}}</td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">{{element.memo}}</td>
 	</ng-container>
 
 	<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

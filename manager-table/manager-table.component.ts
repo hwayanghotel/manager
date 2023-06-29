@@ -1,19 +1,21 @@
 import { Component, ViewChild } from "@angular/core";
 import { MatSort } from "@angular/material/sort";
 import { MatTableDataSource } from "@angular/material/table";
-import { IReservationForm } from "reservation/service/reservation.service";
+import { IReservationForm, ReservationService } from "reservation/service/reservation.service";
 import * as Moment from "moment";
 import { DBService, IDBService } from "reservation/service/DB.service";
+import { MatDialog } from "@angular/material/dialog";
+import { ReservationDialogComponent } from "reservation/reservation-dialog/reservation-dialog.component";
 
 interface Table {
     id: string;
-    visit: boolean;
     date: string;
     type: "평상" | "식사" | "객실";
     name: string;
     status: string;
     order: string;
     memo: string;
+    money: number;
 }
 
 interface Filter {
@@ -26,9 +28,9 @@ interface Filter {
 }
 
 const initFilter: Filter = {
-    open: true,
+    open: false,
     date: [Moment(Moment().format("YYYY-MM-DD")), undefined],
-    states: ["대기중", "예약완료"],
+    states: ["대기", "수정", "예약", "방문"],
     tel: undefined,
     name: undefined,
     car: undefined,
@@ -43,12 +45,19 @@ ManagerFilter.date[0] = Moment(ManagerFilter.date[0]);
 })
 export class ManagerTableComponent {
     @ViewChild(MatSort) sort: MatSort;
-    displayedColumns: string[] = ["visit", "date", "type", "name", "status", "order", "memo"];
+    displayedColumns: string[] = ["status", "date", "type", "name", "order", "memo"];
     dataSource: MatTableDataSource<any>;
     db: IDBService[] = [];
     filter = ManagerFilter;
+    editMode: boolean = false;
+    deleteMode: boolean = false;
+    deleteList: string[] = [];
 
-    constructor(private DBService: DBService) {
+    constructor(
+        private DBService: DBService,
+        private reservationService: ReservationService,
+        private dialog: MatDialog
+    ) {
         this.DBService.firebaseStore$.subscribe((db) => {
             this.db = db as IDBService[];
             this.db.sort((a, b) => this._sortList(a, b));
@@ -58,17 +67,31 @@ export class ManagerTableComponent {
     }
 
     get statePrepare(): boolean {
-        return ManagerFilter.states.includes("대기중");
+        return ManagerFilter.states.includes("대기");
     }
     set statePrepare(value: boolean) {
-        this._setState(value, "대기중");
+        this._setState(value, "대기");
+    }
+
+    get stateEdit(): boolean {
+        return ManagerFilter.states.includes("수정");
+    }
+    set stateEdit(value: boolean) {
+        this._setState(value, "수정");
     }
 
     get stateComplete(): boolean {
-        return ManagerFilter.states.includes("예약완료");
+        return ManagerFilter.states.includes("예약");
     }
     set stateComplete(value: boolean) {
-        this._setState(value, "예약완료");
+        this._setState(value, "예약");
+    }
+
+    get stateVisited(): boolean {
+        return ManagerFilter.states.includes("방문");
+    }
+    set stateVisited(value: boolean) {
+        this._setState(value, "방문");
     }
 
     get stateCancel(): boolean {
@@ -98,6 +121,11 @@ export class ManagerTableComponent {
         this.setList();
     }
 
+    searchInput(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSource.filter = filterValue.trim().toLowerCase();
+    }
+
     private async setList() {
         let result: Table[] = [];
         const db = this._getFilteredDB();
@@ -105,13 +133,13 @@ export class ManagerTableComponent {
         db.forEach((model) => {
             let item: Table = {
                 id: model.id,
-                visit: false,
-                date: `${model["날짜"].slice(5)} ${model["시간"]}시`,
+                date: model["시간"] ? `${model["날짜"].slice(5)} ${model["시간"]}시` : `${model["날짜"].slice(5)}`,
                 type: model["예약유형"],
                 name: `${model["성함"]}(${model["인원"]})`,
                 status: model["상태"],
                 order: this._getOrder(model),
                 memo: this._getMemo(model),
+                money: model["입금확인"] ? 0 : this.reservationService.getReservationCost(model),
             };
             result.push(item);
         });
@@ -130,11 +158,13 @@ export class ManagerTableComponent {
             return 1;
         }
 
-        // 2) "상태"가 "대기중" > "예약완료" > "취소" 순서로 정렬
+        // 2) "상태"가 "대기" > "수정" > "예약" > "방문" > "취소" 순서로 정렬
         const statusOrder = {
-            대기중: 0,
-            예약완료: 1,
-            취소: 2,
+            대기: 0,
+            수정: 1,
+            예약: 2,
+            방문: 3,
+            취소: 4,
         };
         const statusA = statusOrder[a["상태"]];
         const statusB = statusOrder[b["상태"]];
@@ -202,10 +232,66 @@ export class ManagerTableComponent {
     }
 
     private _getMemo(model: IReservationForm): string {
-        let memo: string = `${model["메모"]} / ${model["전화번호"]} / `;
+        let memo: string = "";
+        if (model["메모"]) {
+            memo += `${model["메모"]} / `;
+        }
+        memo += `${model["전화번호"]} / `;
         for (let car of model["차량번호"]) {
             memo += `${car},`;
         }
         return memo;
+    }
+
+    async clickStatus(element: any, status: any) {
+        let model = (await this.reservationService.search(element.id))[0];
+        model["상태"] = status;
+        if (["예약", "방문"].includes(status)) {
+            model["입금확인"] = true;
+        }
+        this.DBService.edit(model);
+    }
+
+    async clickTable(element: any) {
+        if (this.editMode) {
+            let model = (await this.reservationService.search(element.id))[0];
+            this.reservationService.setReservationForm(model);
+            this.reservationService.bookingStep$.next(1);
+            this.dialog.open(ReservationDialogComponent);
+        }
+        if (this.deleteMode) {
+            this.deleteList.push(element.id);
+        }
+    }
+
+    addForm() {
+        this.reservationService.setReservationForm(
+            {
+                상태: "대기",
+            },
+            true
+        );
+        this.reservationService.bookingStep$.next(1);
+        this.dialog.open(ReservationDialogComponent);
+    }
+
+    changeDeleteMode() {
+        this.deleteMode = !this.deleteMode;
+        this.deleteList = [];
+    }
+
+    deleteForm() {
+        this.deleteList.forEach((id) => {
+            this.DBService.delete(id);
+        });
+        this.deleteList = [];
+        this.deleteMode = false;
+    }
+
+    async clickMoney(element: any) {
+        let model = (await this.reservationService.search(element.id))[0];
+        model["입금확인"] = true;
+        this.DBService.edit(model);
+        // 입금 확인 테스트 필요함 + 처음에 false 잘 설정되었나?
     }
 }
