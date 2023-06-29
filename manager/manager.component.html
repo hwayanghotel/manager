@@ -4,6 +4,22 @@
 </mat-form-field>
 
 <div *ngIf="permission">
+	<mat-card>
+		<mat-card-header (click)="open = !open">
+			<mat-card-title>{{today}} Today Info</mat-card-title>
+		</mat-card-header>
+		<mat-card-content *ngIf="open">
+			<div class="indicator">
+				<h2>- 총 고객: {{guests}}팀</h2>
+				<h2>- 백숙: {{nyBaeksuk+baeksuk}} <span>(능이:{{nyBaeksuk}} / 한방:{{baeksuk}})</span></h2>
+			</div>
+			<div class="indicator">
+				<h2>- 버섯찌개: {{mushroom+mushroom2}} <span>(4인:{{mushroom}} / 2인:{{mushroom2}})</span></h2>
+				<h2>- 차량대수: {{cars}}</h2>
+			</div>
+		</mat-card-content>
+	</mat-card>
+
 	<mat-tab-group mat-align-tabs="start">
 		<mat-tab label="달력">
 			<manager-calendar (moveTable)="selectTab()"></manager-calendar>
