@@ -1,0 +1,13 @@
+.filter-box {
+    display: flex;
+
+    .filter {
+        margin: 0 1rem;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .filter-box {
+        flex-direction: column;
+    }
+}

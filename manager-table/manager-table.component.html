@@ -3,22 +3,46 @@
 		<mat-card-title>Filter</mat-card-title>
 	</mat-card-header>
 	<mat-card-content *ngIf="filter.open">
-		<mat-card-subtitle>날짜 범위 선택</mat-card-subtitle>
-		<mat-form-field>
-			<mat-label>Enter a date range</mat-label>
-			<mat-date-range-input [rangePicker]="picker">
-				<input matStartDate placeholder="Start date" [(ngModel)]="filter.date[0]">
-				<input matEndDate placeholder="End date" [(ngModel)]="filter.date[1]">
-			</mat-date-range-input>
-			<mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-			<mat-date-range-picker #picker></mat-date-range-picker>
-		</mat-form-field>
+		<div class="filter-box">
+			<div class="filter">
+				<mat-card-subtitle>날짜 범위 선택</mat-card-subtitle>
+				<mat-form-field>
+					<mat-label>Enter a date range</mat-label>
+					<mat-date-range-input [rangePicker]="picker">
+						<input matStartDate placeholder="Start date" [(ngModel)]="filter.date[0]">
+						<input matEndDate placeholder="End date" [(ngModel)]="filter.date[1]">
+					</mat-date-range-input>
+					<mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+					<mat-date-range-picker #picker></mat-date-range-picker>
+				</mat-form-field>
+			</div>
 
-		<mat-card-subtitle>상태 선택</mat-card-subtitle>
-		<mat-checkbox [(ngModel)]="statePrepare">대기중</mat-checkbox>
-		<mat-checkbox [(ngModel)]="stateComplete">예약완료</mat-checkbox>
-		<mat-checkbox [(ngModel)]="stateCancel">취소</mat-checkbox>
+			<div class="filter">
+			</div>
 
+			<div class="filter">
+				<mat-card-subtitle>상태 선택</mat-card-subtitle>
+				<mat-checkbox [(ngModel)]="statePrepare">대기중</mat-checkbox>
+				<mat-checkbox [(ngModel)]="stateComplete">예약완료</mat-checkbox>
+				<mat-checkbox [(ngModel)]="stateCancel">취소</mat-checkbox>
+			</div>
+		</div>
+		<div class="filter-box">
+			<mat-form-field class="filter">
+				<mat-label>예약자 성함</mat-label>
+				<input matInput placeholder="홍길동" [(ngModel)]="filter.name">
+			</mat-form-field>
+
+			<mat-form-field class="filter">
+				<mat-label>전화번호</mat-label>
+				<input matInput placeholder="01099998888" type="number" [(ngModel)]="filter.tel">
+			</mat-form-field>
+
+			<mat-form-field class="filter">
+				<mat-label>차량번호</mat-label>
+				<input matInput placeholder="12가1234" [(ngModel)]="filter.car">
+			</mat-form-field>
+		</div>
 	</mat-card-content>
 	<mat-card-actions [align]="'end'" *ngIf="filter.open">
 		<button mat-button (click)="initFilterAndList()">초기화</button>

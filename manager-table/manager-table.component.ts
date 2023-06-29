@@ -20,18 +20,26 @@ interface Filter {
     open: boolean;
     date: Moment.Moment[];
     states: string[];
+    tel: number;
+    name: string;
+    car: string;
 }
 
 const initFilter: Filter = {
     open: true,
-    date: [],
+    date: [Moment(Moment().format("YYYY-MM-DD")), undefined],
     states: ["대기중", "예약완료"],
+    tel: undefined,
+    name: undefined,
+    car: undefined,
 };
 export let ManagerFilter: Filter = JSON.parse(JSON.stringify(initFilter));
+ManagerFilter.date[0] = Moment(ManagerFilter.date[0]);
 
 @Component({
     selector: "manager-table",
     templateUrl: "./manager-table.component.html",
+    styleUrls: ["./manager-table.component.scss"],
 })
 export class ManagerTableComponent {
     @ViewChild(MatSort) sort: MatSort;
@@ -80,6 +88,8 @@ export class ManagerTableComponent {
 
     initFilterAndList() {
         ManagerFilter = JSON.parse(JSON.stringify(initFilter));
+        ManagerFilter.date[0] = Moment(ManagerFilter.date[0]);
+
         this.filter = ManagerFilter;
         this.setList();
     }
@@ -141,13 +151,29 @@ export class ManagerTableComponent {
     private _getFilteredDB(): IDBService[] {
         let db: IDBService[] = JSON.parse(JSON.stringify(this.db));
         if (this.filter.date[0]) {
-            db = db.filter((v) => Moment(v["날짜"]) >= this.filter.date[0]);
+            db = db.filter((v) => v["날짜"] >= this.filter.date[0].format("YYYY-MM-DD"));
         }
         if (this.filter.date[1]) {
             db = db.filter((v) => Moment(v["날짜"]) <= this.filter.date[1]);
         }
         if (this.filter.states.length > 0) {
             db = db.filter((v) => this.filter.states.includes(v["상태"]));
+        }
+        if (this.filter.name) {
+            db = db.filter((v) => v["성함"].includes(this.filter.name));
+        }
+        if (this.filter.tel) {
+            db = db.filter((v) => v["전화번호"].replace(/-/g, "").includes(String(this.filter.tel)));
+        }
+        if (this.filter.car) {
+            db = db.filter((v) => {
+                for (let car of v["차량번호"]) {
+                    if (car.includes(this.filter.car)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
         }
         return db;
     }
