@@ -2,14 +2,52 @@
 	<mat-label>빠른검색</mat-label>
 	<input matInput (keyup)="searchInput($event)" placeholder="Ex. ium" #input>
 </mat-form-field>
-<button class="main-button" mat-raised-button color="primary" (click)="filter.open = !filter.open">Filter</button>
-<button class="main-button" mat-raised-button color="primary" (click)="addForm()">추가</button>
+<button class="main-button" mat-raised-button color="primary" [class.off]="!editMode"
+		(click)="filter.open = !filter.open">
+	<mat-icon>filter_vintage</mat-icon>
+	필터
+</button>
+<button class="main-button" mat-raised-button color="primary" (click)="addForm()">
+	<mat-icon>add_circle_outline</mat-icon>
+	추가
+</button>
 <button class="main-button" mat-raised-button color="warn" [class.off]="!editMode"
-		(click)="editMode = !editMode">수정({{editMode}})</button>
+		(click)="editMode = !editMode">
+	<mat-icon>edit</mat-icon>
+	수정({{editMode}})
+</button>
+
 <button class="main-button" mat-raised-button color="warn" [class.off]="!deleteMode"
-		(click)="changeDeleteMode()">삭제({{deleteMode}})</button>
+		(click)="changeDeleteMode()">
+	<mat-icon>delete</mat-icon>
+	삭제({{deleteMode}})
+</button>
 <button class="main-button" mat-raised-button color="warn" *ngIf="deleteMode"
-		(click)="deleteForm()">정말로삭제하기({{deleteList.length}})</button>
+		(click)="deleteForm()">
+	<mat-icon>error_outline</mat-icon>
+	정말로삭제하기
+</button>
+
+<button class="main-button" mat-raised-button color="warn" [class.off]="!SMSMode"
+		(click)="changeSMSMode()">
+	<mat-icon> mail_outline</mat-icon>
+	복수문자({{SMSMode}})
+</button>
+<button class="main-button" mat-raised-button color="warn" *ngIf="SMSMode"
+		(click)="sendSMSToGuests()">
+	<mat-icon>error_outline</mat-icon>
+	문자전송(복수)
+</button>
+<button class="main-button" mat-raised-button color="warn" *ngIf="SMSMode"
+		(click)="sendSMSToGuests('BeforeVisit')">
+	<mat-icon>error_outline</mat-icon>
+	방문직전전송(복수)
+</button>
+<button class="main-button" mat-raised-button color="warn" *ngIf="SMSMode"
+		(click)="sendSMSToGuests('Confirm')">
+	<mat-icon>error_outline</mat-icon>
+	예약확정전송(복수)
+</button>
 
 <mat-card *ngIf="filter.open">
 	<mat-card-header>
@@ -28,9 +66,6 @@
 					<mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
 					<mat-date-range-picker #picker></mat-date-range-picker>
 				</mat-form-field>
-			</div>
-
-			<div class="filter">
 			</div>
 
 			<div class="filter">
@@ -66,6 +101,21 @@
 </mat-card>
 
 <table mat-table [dataSource]="dataSource" matSort>
+	<ng-container matColumnDef="checked">
+		<th mat-header-cell *matHeaderCellDef class="checked">
+			<mat-checkbox color="Primary"
+						  [(ngModel)]="totalChecked"
+						  (ngModelChange)="updateAllDataChecked()">{{selectedNumber}}
+			</mat-checkbox>
+		</th>
+		<td mat-cell class="checked" *matCellDef="let element">
+			<mat-checkbox color="Primary"
+						  [(ngModel)]="element.checked"
+						  (ngModelChange)="updateTotalChecked(element)">
+			</mat-checkbox>
+		</td>
+	</ng-container>
+
 	<ng-container matColumnDef="status">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>상태</th>
 		<td mat-cell *matCellDef="let element" [matMenuTriggerFor]="menu">
@@ -100,7 +150,49 @@
 
 	<ng-container matColumnDef="memo">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>메모</th>
-		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">{{element.memo}}</td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">
+			{{element.memo}}/{{element.tel}}/{{element.cars}}</td>
+	</ng-container>
+
+	<ng-container matColumnDef="more">
+		<th mat-header-cell *matHeaderCellDef mat-sort-header>more</th>
+		<td mat-cell *matCellDef="let element">
+			<button mat-icon-button [matMenuTriggerFor]="menuMore">
+				<mat-icon>more_vert</mat-icon>
+			</button>
+			<mat-menu #menuMore="matMenu">
+				<button mat-menu-item>
+					<a href="tel:{{element.tel}}">
+						<mat-icon>call</mat-icon>
+						<span>전화걸기</span>
+					</a>
+				</button>
+				<button mat-menu-item>
+					<a href="sms:{{element.tel}}">
+						<mat-icon>mail_outline</mat-icon>
+						<span>SMS전송</span>
+					</a>
+				</button>
+				<button mat-menu-item>
+					<a href="sms:{{element.tel}}?body={{getSMSText(element, 'Account')}}">
+						<mat-icon>mail_outline</mat-icon>
+						<span>계좌전송</span>
+					</a>
+				</button>
+				<button mat-menu-item>
+					<a href="sms:{{element.tel}}?body={{getSMSText(element, 'Confirm')}}">
+						<mat-icon>mail_outline</mat-icon>
+						<span>예약확정전송</span>
+					</a>
+				</button>
+				<button mat-menu-item>
+					<a href="sms:{{element.tel}}?body={{getSMSText(element, 'BeforeVisit')}}">
+						<mat-icon>mail_outline</mat-icon>
+						<span>방문직전전송</span>
+					</a>
+				</button>
+			</mat-menu>
+		</td>
 	</ng-container>
 
 	<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

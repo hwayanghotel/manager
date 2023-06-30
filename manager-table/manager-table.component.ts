@@ -1,4 +1,4 @@
-import { Component, ViewChild } from "@angular/core";
+import { Component, OnInit, ViewChild } from "@angular/core";
 import { MatSort } from "@angular/material/sort";
 import { MatTableDataSource } from "@angular/material/table";
 import { IReservationForm, ReservationService } from "reservation/service/reservation.service";
@@ -16,6 +16,9 @@ interface Table {
     order: string;
     memo: string;
     money: number;
+    checked: boolean;
+    tel: string;
+    cars: string;
 }
 
 interface Filter {
@@ -43,14 +46,17 @@ ManagerFilter.date[0] = Moment(ManagerFilter.date[0]);
     templateUrl: "./manager-table.component.html",
     styleUrls: ["./manager-table.component.scss"],
 })
-export class ManagerTableComponent {
+export class ManagerTableComponent implements OnInit {
     @ViewChild(MatSort) sort: MatSort;
-    displayedColumns: string[] = ["status", "date", "type", "name", "order", "memo"];
+    displayedColumns: string[] = ["checked", "status", "date", "type", "name", "order", "memo", "more"];
     dataSource: MatTableDataSource<any>;
     db: IDBService[] = [];
     filter = ManagerFilter;
     editMode: boolean = false;
     deleteMode: boolean = false;
+    checkMode: boolean = true;
+    SMSMode: boolean = false;
+    totalChecked: boolean = false;
     deleteList: string[] = [];
 
     constructor(
@@ -64,6 +70,10 @@ export class ManagerTableComponent {
             this.setList();
         });
         this.filter = ManagerFilter;
+    }
+
+    ngOnInit(): void {
+        this._setCheckTable();
     }
 
     get statePrepare(): boolean {
@@ -138,8 +148,11 @@ export class ManagerTableComponent {
                 name: `${model["성함"]}(${model["인원"]})`,
                 status: model["상태"],
                 order: this._getOrder(model),
-                memo: this._getMemo(model),
+                memo: model["메모"],
+                cars: this._getCars(model),
+                tel: model["전화번호"],
                 money: model["입금확인"] ? 0 : this.reservationService.getReservationCost(model),
+                checked: false,
             };
             result.push(item);
         });
@@ -231,16 +244,12 @@ export class ManagerTableComponent {
         return order;
     }
 
-    private _getMemo(model: IReservationForm): string {
-        let memo: string = "";
-        if (model["메모"]) {
-            memo += `${model["메모"]} / `;
-        }
-        memo += `${model["전화번호"]} / `;
-        for (let car of model["차량번호"]) {
-            memo += `${car},`;
-        }
-        return memo;
+    private _getCars(model: IReservationForm): string {
+        let cars: string = "";
+        model["차량번호"].forEach((car) => {
+            cars += `${car}, `;
+        });
+        return cars;
     }
 
     async clickStatus(element: any, status: any) {
@@ -258,9 +267,9 @@ export class ManagerTableComponent {
             this.reservationService.setReservationForm(model);
             this.reservationService.bookingStep$.next(1);
             this.dialog.open(ReservationDialogComponent);
-        }
-        if (this.deleteMode) {
-            this.deleteList.push(element.id);
+        } else if (this.deleteMode || this.SMSMode) {
+            element.checked = !element.checked;
+            this.updateTotalChecked(element);
         }
     }
 
@@ -277,21 +286,134 @@ export class ManagerTableComponent {
 
     changeDeleteMode() {
         this.deleteMode = !this.deleteMode;
-        this.deleteList = [];
+        this._setCheckTable();
     }
 
     deleteForm() {
-        this.deleteList.forEach((id) => {
-            this.DBService.delete(id);
-        });
-        this.deleteList = [];
+        this.dataSource.data
+            .filter((v: Table) => v.checked)
+            .forEach((v: Table) => {
+                this.DBService.delete(v.id);
+            });
         this.deleteMode = false;
+        this.checkMode = false;
+        this.totalChecked = false;
+    }
+
+    changeSMSMode() {
+        this.SMSMode = !this.SMSMode;
+        this._setCheckTable();
     }
 
     async clickMoney(element: any) {
         let model = (await this.reservationService.search(element.id))[0];
         model["입금확인"] = true;
         this.DBService.edit(model);
-        // 입금 확인 테스트 필요함 + 처음에 false 잘 설정되었나?
+    }
+
+    telList(): string {
+        let tels = "";
+        this.dataSource.filteredData.forEach((filteredData) => {
+            const data = this.db.filter((originalData) => originalData.id === filteredData.id);
+            if (data[0]) {
+                tels += data[0]["전화번호"] + ",";
+            }
+        });
+        return tels;
+    }
+
+    updateAllDataChecked(value?: boolean) {
+        this.dataSource.data = this.dataSource.data.map((v: Table) => {
+            return {
+                ...v,
+                checked: value ? value : this.totalChecked,
+            };
+        });
+    }
+
+    updateTotalChecked(element: Table) {
+        if (!element.checked) {
+            this.totalChecked = false;
+        } else {
+            this.totalChecked = this.dataSource.data.filter((v: Table) => !v.checked).length === 0;
+        }
+    }
+
+    get selectedNumber(): number {
+        if (this.dataSource) {
+            return this.dataSource.data.filter((v: Table) => v.checked).length;
+        }
+        return 0;
+    }
+
+    private _setCheckTable() {
+        this.checkMode = !this.checkMode;
+        this.totalChecked = false;
+        if (this.displayedColumns.includes("checked")) {
+            this.displayedColumns = this.displayedColumns.filter((v) => v !== "checked");
+        } else {
+            this.displayedColumns.unshift("checked");
+        }
+        this.updateAllDataChecked(false);
+    }
+
+    sendSMSToGuests(type?: "BeforeVisit" | "Confirm") {
+        let tels: string[] = [];
+        this.dataSource.data
+            .filter((v: Table) => v.checked)
+            .forEach((v: Table) => {
+                tels.push(v.tel);
+            });
+
+        let url = `sms:${tels}`;
+
+        if (type === "BeforeVisit") {
+            url += `?body=${encodeURIComponent(
+                SMSTextBeforeVisit.replace("NAME님 ", "").replace("URIRESOURCE", "type=search")
+            )}`;
+        } else if (type === "Confirm") {
+            url += `?body=${encodeURIComponent(
+                SMStextForConfirm.replace("NAME님 ", "").replace("TYPE ", "").replace("URIRESOURCE", "type=search")
+            )}`;
+        }
+
+        location.href = url;
+
+        this.SMSMode = false;
+        this._setCheckTable();
+    }
+
+    getSMSText(element: Table, type?: "BeforeVisit" | "Account" | "Confirm"): string {
+        if (type === "Account") {
+            return encodeURIComponent(
+                SMStextForAccount.replace("NAME", element.name).replace("MONEY", String(element.money))
+            );
+        } else if (type === "BeforeVisit") {
+            return encodeURIComponent(
+                SMSTextBeforeVisit.replace("NAME", element.name).replace("URIRESOURCE", `id=${element.id}`)
+            );
+        } else if (type === "Confirm") {
+            return encodeURIComponent(
+                SMStextForConfirm.replace("NAME", element.name)
+                    .replace("TYPE", String(element.type))
+                    .replace("URIRESOURCE", `id=${element.id}`)
+            );
+        }
+        return "";
     }
 }
+
+const SMSTextBeforeVisit = `NAME님 안녕하세요. 능운대펜션입니다. 방문일이 다가와 연락드립니다.
+필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
+http://192.168.219.121:4200/#/reservation?URIRESOURCE
+감사합니다.`;
+
+const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. 예약을 위한 입금 정보를 안내드립니다.
+- 예약금: MONEY원
+- 입금계좌: 농협 352-0370-5919-43 (예금주: 정경미)
+입금 순서로 예약이 완료되며, 확인 후 연락드리겠습니다. 감사합니다.`;
+
+const SMStextForConfirm = `NAME님 안녕하세요. 능운대펜션입니다. TYPE 예약 확정되어 안내드립니다.
+필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
+http://192.168.219.121:4200/#/reservation?URIRESOURCE
+감사합니다.`;
