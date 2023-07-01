@@ -323,12 +323,14 @@ export class ManagerTableComponent implements OnInit {
     }
 
     updateAllDataChecked(value?: boolean) {
-        this.dataSource.data = this.dataSource.data.map((v: Table) => {
-            return {
-                ...v,
-                checked: value ? value : this.totalChecked,
-            };
-        });
+        if (this.dataSource) {
+            this.dataSource.data = this.dataSource.data.map((v: Table) => {
+                return {
+                    ...v,
+                    checked: value ? value : this.totalChecked,
+                };
+            });
+        }
     }
 
     updateTotalChecked(element: Table) {
@@ -357,7 +359,7 @@ export class ManagerTableComponent implements OnInit {
         this.updateAllDataChecked(false);
     }
 
-    sendSMSToGuests(type?: "BeforeVisit" | "Confirm") {
+    sendSMSToGuests(type?: "BeforeVisit" | "Account" | "Confirm" | "Booking") {
         let tels: string[] = [];
         this.dataSource.data
             .filter((v: Table) => v.checked)
@@ -375,6 +377,12 @@ export class ManagerTableComponent implements OnInit {
             url += `?body=${encodeURIComponent(
                 SMStextForConfirm.replace("NAME님 ", "").replace("TYPE ", "").replace("URIRESOURCE", "type=search")
             )}`;
+        } else if (type === "Account") {
+            url += `?body=${encodeURIComponent(
+                SMStextForAccount.replace("NAME님 ", "").replace("- 예약금: MONEY원", "")
+            )}`;
+        } else if (type === "Booking") {
+            url += `?body=${encodeURIComponent(SMStextForBooking)}`;
         }
 
         location.href = url;
@@ -405,15 +413,21 @@ export class ManagerTableComponent implements OnInit {
 
 const SMSTextBeforeVisit = `NAME님 안녕하세요. 능운대펜션입니다. 방문일이 다가와 연락드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-http://192.168.219.121:4200/#/reservation?URIRESOURCE
+http://172.30.1.82:4200/#/reservation?URIRESOURCE
 감사합니다.`;
 
 const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. 예약을 위한 입금 정보를 안내드립니다.
-- 예약금: MONEY원
+입금 순서로 예약이 완료되며, 확인 후 연락드리겠습니다. 감사합니다.
 - 입금계좌: 농협 352-0370-5919-43 (예금주: 정경미)
-입금 순서로 예약이 완료되며, 확인 후 연락드리겠습니다. 감사합니다.`;
+- 예약금: MONEY원`;
 
 const SMStextForConfirm = `NAME님 안녕하세요. 능운대펜션입니다. TYPE 예약 확정되어 안내드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-http://192.168.219.121:4200/#/reservation?URIRESOURCE
+http://172.30.1.82:4200/#/reservation?URIRESOURCE
+감사합니다.`;
+
+const SMStextForBooking = `안녕하세요. 능운대펜션입니다.
+아래 링크를 통해 <객실>, <평상>, <식사> 예약이 가능합니다.
+공원 내 입차를 희망하시면, <차량정보>도 함께 적어주세요!
+http://172.30.1.82:4200/#/reservation
 감사합니다.`;

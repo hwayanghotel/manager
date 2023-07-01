@@ -2,25 +2,25 @@
 	<mat-label>빠른검색</mat-label>
 	<input matInput (keyup)="searchInput($event)" placeholder="Ex. ium" #input>
 </mat-form-field>
-<button class="main-button" mat-raised-button color="primary" [class.off]="!editMode"
+<button class="main-button" mat-raised-button color="primary" [class.off]="!filter.open"
 		(click)="filter.open = !filter.open">
 	<mat-icon>filter_vintage</mat-icon>
 	필터
 </button>
-<button class="main-button" mat-raised-button color="primary" (click)="addForm()">
+<button class="main-button" mat-raised-button (click)="addForm()">
 	<mat-icon>add_circle_outline</mat-icon>
 	추가
 </button>
-<button class="main-button" mat-raised-button color="warn" [class.off]="!editMode"
+<button class="main-button" mat-raised-button color="primary" [class.off]="!editMode"
 		(click)="editMode = !editMode">
 	<mat-icon>edit</mat-icon>
-	수정({{editMode}})
+	수정({{editMode? "On" :"Off"}})
 </button>
 
-<button class="main-button" mat-raised-button color="warn" [class.off]="!deleteMode"
+<button class="main-button" mat-raised-button color="primary" [class.off]="!deleteMode"
 		(click)="changeDeleteMode()">
 	<mat-icon>delete</mat-icon>
-	삭제({{deleteMode}})
+	삭제({{deleteMode? "On" :"Off"}})
 </button>
 <button class="main-button" mat-raised-button color="warn" *ngIf="deleteMode"
 		(click)="deleteForm()">
@@ -28,10 +28,10 @@
 	정말로삭제하기
 </button>
 
-<button class="main-button" mat-raised-button color="warn" [class.off]="!SMSMode"
+<button class="main-button" mat-raised-button color="primary" [class.off]="!SMSMode"
 		(click)="changeSMSMode()">
 	<mat-icon> mail_outline</mat-icon>
-	복수문자({{SMSMode}})
+	문자({{SMSMode? "On" :"Off"}})
 </button>
 <button class="main-button" mat-raised-button color="warn" *ngIf="SMSMode"
 		(click)="sendSMSToGuests()">
@@ -39,14 +39,24 @@
 	문자전송(복수)
 </button>
 <button class="main-button" mat-raised-button color="warn" *ngIf="SMSMode"
-		(click)="sendSMSToGuests('BeforeVisit')">
+		(click)="sendSMSToGuests('Booking')">
 	<mat-icon>error_outline</mat-icon>
-	방문직전전송(복수)
+	예약요청(복수)
+</button>
+<button class="main-button" mat-raised-button color="warn" *ngIf="SMSMode"
+		(click)="sendSMSToGuests('Account')">
+	<mat-icon>error_outline</mat-icon>
+	계좌전송(복수)
 </button>
 <button class="main-button" mat-raised-button color="warn" *ngIf="SMSMode"
 		(click)="sendSMSToGuests('Confirm')">
 	<mat-icon>error_outline</mat-icon>
 	예약확정전송(복수)
+</button>
+<button class="main-button" mat-raised-button color="warn" *ngIf="SMSMode"
+		(click)="sendSMSToGuests('BeforeVisit')">
+	<mat-icon>error_outline</mat-icon>
+	방문직전전송(복수)
 </button>
 
 <mat-card *ngIf="filter.open">
