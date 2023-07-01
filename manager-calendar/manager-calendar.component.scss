@@ -75,7 +75,7 @@
 p.content {
     margin: 0.1rem;
     text-align: center;
-    font-size: 0.5rem;
+    font-size: 0.5rem !important;
     color: #5eb917;
 
     &.expired {
