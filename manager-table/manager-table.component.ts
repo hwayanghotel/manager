@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { MatSort } from "@angular/material/sort";
 import { MatTableDataSource } from "@angular/material/table";
-import { IReservationForm, ReservationService } from "reservation/service/reservation.service";
+import { ReservationService } from "reservation/service/reservation.service";
 import * as Moment from "moment";
 import { DBService, IDBService } from "reservation/service/DB.service";
 import { MatDialog } from "@angular/material/dialog";
@@ -19,6 +19,7 @@ interface Table {
     checked: boolean;
     tel: string;
     cars: string;
+    managerMemo: string;
 }
 
 interface Filter {
@@ -48,7 +49,19 @@ ManagerFilter.date[0] = Moment(ManagerFilter.date[0]);
 })
 export class ManagerTableComponent implements OnInit {
     @ViewChild(MatSort) sort: MatSort;
-    displayedColumns: string[] = ["checked", "status", "date", "type", "name", "order", "more", "car", "tel", "memo"];
+    displayedColumns: string[] = [
+        "checked",
+        "status",
+        "date",
+        "type",
+        "name",
+        "order",
+        "more",
+        "car",
+        "tel",
+        "managerMemo",
+        "memo",
+    ];
     dataSource: MatTableDataSource<any>;
     db: IDBService[] = [];
     filter = ManagerFilter;
@@ -161,6 +174,7 @@ export class ManagerTableComponent implements OnInit {
                 tel: model["전화번호"],
                 money: model["입금확인"] ? 0 : this.reservationService.getReservationCost(model),
                 checked: false,
+                managerMemo: model["관리자메모"],
             };
             result.push(item);
         });
@@ -168,7 +182,7 @@ export class ManagerTableComponent implements OnInit {
         this.dataSource.sort = this.sort;
     }
 
-    private _sortList(a: IReservationForm, b: IReservationForm) {
+    private _sortList(a: IDBService, b: IDBService) {
         // 1) "날짜"가 빠를수록 정렬
         const dateA = new Date(a["날짜"]);
         const dateB = new Date(b["날짜"]);
@@ -229,7 +243,7 @@ export class ManagerTableComponent implements OnInit {
         return db;
     }
 
-    private _getOrder(model: IReservationForm): string {
+    private _getOrder(model: IDBService): string {
         let order: string = "";
         if (model["평상"]) {
             order += `평상:${model["평상"]},`;
@@ -252,7 +266,7 @@ export class ManagerTableComponent implements OnInit {
         return order;
     }
 
-    private _getCars(model: IReservationForm): string {
+    private _getCars(model: IDBService): string {
         let cars: string = "";
         model["차량번호"].forEach((car) => {
             cars += `${car}, `;
