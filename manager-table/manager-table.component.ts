@@ -48,7 +48,7 @@ ManagerFilter.date[0] = Moment(ManagerFilter.date[0]);
 })
 export class ManagerTableComponent implements OnInit {
     @ViewChild(MatSort) sort: MatSort;
-    displayedColumns: string[] = ["checked", "status", "date", "type", "name", "order", "memo", "more"];
+    displayedColumns: string[] = ["checked", "status", "date", "type", "name", "order", "more", "car", "tel", "memo"];
     dataSource: MatTableDataSource<any>;
     db: IDBService[] = [];
     filter = ManagerFilter;
@@ -57,7 +57,6 @@ export class ManagerTableComponent implements OnInit {
     checkMode: boolean = true;
     SMSMode: boolean = false;
     totalChecked: boolean = false;
-    deleteList: string[] = [];
 
     constructor(
         private DBService: DBService,
@@ -74,6 +73,15 @@ export class ManagerTableComponent implements OnInit {
 
     ngOnInit(): void {
         this._setCheckTable();
+
+        if (!this.isMobile()) {
+            this.displayedColumns = this.displayedColumns.filter((v) => v !== "more");
+        }
+    }
+
+    isMobile(): boolean {
+        const userAgent = window.navigator.userAgent || "";
+        return userAgent.includes("Mobile") && !userAgent.includes("iPad") && !userAgent.includes("tablet");
     }
 
     get statePrepare(): boolean {

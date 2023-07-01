@@ -3,6 +3,7 @@ import { MatTabGroup } from "@angular/material/tabs";
 import { ActivatedRoute } from "@angular/router";
 import { ManagerService } from "manager/manager.service";
 import { DBService, IDBService } from "reservation/service/DB.service";
+import * as Moment from "moment";
 
 @Component({
     selector: "manager",
@@ -12,7 +13,7 @@ import { DBService, IDBService } from "reservation/service/DB.service";
 export class ManagerComponent implements OnInit {
     @ViewChild(MatTabGroup) tabGroup: MatTabGroup;
     open: boolean = true;
-    today = `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`;
+    today = Moment().format("YYYY-MM-DD");
     nyBaeksuk = 0;
     baeksuk = 0;
     mushroom = 0;
@@ -22,7 +23,9 @@ export class ManagerComponent implements OnInit {
 
     constructor(private route: ActivatedRoute, private DBService: DBService, private managerService: ManagerService) {
         this.DBService.firebaseStore$.subscribe((db) => {
-            const dailyData = db.filter((v) => v["날짜"] === this.today);
+            const dailyData = db
+                .filter((v) => v["날짜"] === this.today)
+                .filter((v) => ["예약", "방문"].includes(v["상태"]));
             this._setIndicators(dailyData);
         });
     }
