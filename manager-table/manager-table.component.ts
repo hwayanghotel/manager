@@ -275,7 +275,7 @@ export class ManagerTableComponent implements OnInit {
     }
 
     async clickStatus(element: any, status: any) {
-        let model = (await this.reservationService.search(element.id))[0];
+        let model = (await this.DBService.search({ id: element.id }))[0];
         model["상태"] = status;
         if (["예약", "방문"].includes(status)) {
             model["입금확인"] = true;
@@ -285,8 +285,8 @@ export class ManagerTableComponent implements OnInit {
 
     async clickTable(element: any) {
         if (this.editMode) {
-            let model = (await this.reservationService.search(element.id))[0];
-            this.reservationService.setReservationForm(model);
+            let model = (await this.DBService.search({ id: element.id }))[0];
+            this.reservationService.formData$.next(model);
             this.reservationService.bookingStep$.next(1);
             this.dialog.open(ReservationDialogComponent);
         } else if (this.deleteMode || this.SMSMode) {
@@ -296,12 +296,7 @@ export class ManagerTableComponent implements OnInit {
     }
 
     addForm() {
-        this.reservationService.setReservationForm(
-            {
-                상태: "대기",
-            },
-            true
-        );
+        this.reservationService.formData$.next({ 상태: "대기" });
         this.reservationService.bookingStep$.next(1);
         this.dialog.open(ReservationDialogComponent);
     }
@@ -328,7 +323,7 @@ export class ManagerTableComponent implements OnInit {
     }
 
     async clickMoney(element: any) {
-        let model = (await this.reservationService.search(element.id))[0];
+        let model = (await this.DBService.search({ id: element.id }))[0];
         model["입금확인"] = true;
         this.DBService.edit(model);
     }
