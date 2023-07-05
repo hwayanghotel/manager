@@ -24,7 +24,7 @@ export class ManagerComponent implements OnInit {
     constructor(private route: ActivatedRoute, private DBService: DBService, private managerService: ManagerService) {
         this.DBService.firebaseStore$.subscribe((db) => {
             const dailyData = db
-                .filter((v) => v["날짜"] === this.today)
+                .filter((v) => v["예약일"] === this.today)
                 .filter((v) => ["예약", "방문"].includes(v["상태"]));
             this._setIndicators(dailyData);
         });

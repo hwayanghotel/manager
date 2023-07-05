@@ -27,12 +27,12 @@ export class ManagerCalendarComponent extends CalendarComponent {
             (data as IDBService[])
                 .filter(
                     (v) =>
-                        new Date(v["날짜"]).getFullYear() === this.currentYear &&
-                        new Date(v["날짜"]).getMonth() === this.currentMonth - 1 &&
+                        new Date(v["예약일"]).getFullYear() === this.currentYear &&
+                        new Date(v["예약일"]).getMonth() === this.currentMonth - 1 &&
                         ["예약", "방문"].includes(v["상태"])
                 )
                 .forEach((v) => {
-                    const index = new Date(v["날짜"]).getDate();
+                    const index = new Date(v["예약일"]).getDate();
                     if (this.cars[index]) {
                         this.cars[index] += v["차량번호"].length;
                     } else {
