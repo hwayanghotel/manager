@@ -22,7 +22,7 @@ export class ManagerComponent implements OnInit {
     guests = 0;
 
     constructor(private route: ActivatedRoute, private DBService: DBService, private managerService: ManagerService) {
-        this.DBService.firebaseStore$.subscribe((db) => {
+        this.DBService.customerDB$.subscribe((db) => {
             const dailyData = db
                 .filter((v) => v["예약일"] === this.today)
                 .filter((v) => ["예약", "방문"].includes(v["상태"]));

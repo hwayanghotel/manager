@@ -22,7 +22,7 @@ export class ManagerCalendarComponent extends CalendarComponent {
     }
 
     private _setDailyCarNumber() {
-        this.DBService.firebaseStore$.subscribe((data) => {
+        this.DBService.customerDB$.subscribe((data) => {
             this.cars = [];
             (data as IDBService[])
                 .filter(
@@ -33,10 +33,11 @@ export class ManagerCalendarComponent extends CalendarComponent {
                 )
                 .forEach((v) => {
                     const index = new Date(v["예약일"]).getDate();
+                    this.cars[index] = 0;
                     if (this.cars[index]) {
-                        this.cars[index] += v["차량번호"].length;
+                        this.cars[index] += v["차량번호"] && v["차량번호"].length;
                     } else {
-                        this.cars[index] = v["차량번호"].length;
+                        this.cars[index] = v["차량번호"] && v["차량번호"].length;
                     }
                 });
         });

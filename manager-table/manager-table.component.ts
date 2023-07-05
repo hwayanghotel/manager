@@ -76,7 +76,7 @@ export class ManagerTableComponent implements OnInit {
         private reservationService: ReservationService,
         private dialog: MatDialog
     ) {
-        this.DBService.firebaseStore$.subscribe((db) => {
+        this.DBService.customerDB$.subscribe((db) => {
             this.db = db as IDBService[];
             this.db.sort((a, b) => this._sortList(a, b));
             this.setList();
@@ -270,9 +270,11 @@ export class ManagerTableComponent implements OnInit {
 
     private _getCars(model: IDBService): string {
         let cars: string = "";
-        model["차량번호"].forEach((car) => {
-            cars += `${car}, `;
-        });
+        if (model["차량번호"]) {
+            model["차량번호"].forEach((car) => {
+                cars += `${car}, `;
+            });
+        }
         return cars;
     }
 
