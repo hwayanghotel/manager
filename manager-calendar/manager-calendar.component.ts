@@ -4,7 +4,8 @@ import { CalendarComponent } from "reservation/calendar/calendar.component";
 import { HolidayService } from "reservation/service/holiday.service";
 import * as Moment from "moment";
 import { DBService, IUserDB } from "reservation/service/DB.service";
-import { MAX_RESERVATION } from "reservation/service/reservation.service";
+import { MAX_RESERVATION, ReservationService } from "reservation/service/reservation.service";
+import { MatDialog } from "@angular/material/dialog";
 
 @Component({
     selector: "manager-calendar",
@@ -15,9 +16,13 @@ export class ManagerCalendarComponent extends CalendarComponent {
     @Output() moveTable = new EventEmitter<void>();
     private cars: number[] = [];
 
-    constructor(private holydayService: HolidayService, private DBService: DBService) {
-        super(holydayService);
-
+    constructor(
+        override holidayService: HolidayService,
+        override DBService: DBService,
+        override dialog: MatDialog,
+        override reservationService: ReservationService
+    ) {
+        super(holidayService, DBService, dialog, reservationService);
         this._setDailyCarNumber();
     }
 
@@ -41,6 +46,10 @@ export class ManagerCalendarComponent extends CalendarComponent {
                     }
                 });
         });
+    }
+
+    override get typeList(): ("평상" | "식사" | "테이블")[] {
+        return ["평상", "테이블", "식사"];
     }
 
     details(date: any) {

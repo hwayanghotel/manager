@@ -38,11 +38,11 @@ export class ManagerComponent implements OnInit {
         this.cars = 0;
         this.guests = 0;
         dailyData.forEach((data) => {
-            this.nyBaeksuk += data["능이백숙"];
-            this.baeksuk += data["백숙"];
-            this.mushroom += data["버섯찌개"];
-            this.mushroom2 += data["버섯찌개2"];
-            this.cars += data["차량번호"].length;
+            this.nyBaeksuk += data["능이백숙"] ? data["능이백숙"] : 0;
+            this.baeksuk += data["백숙"] ? data["백숙"] : 0;
+            this.mushroom += data["버섯찌개"] ? data["버섯찌개"] : 0;
+            this.mushroom2 += data["버섯찌개2"] ? data["버섯찌개2"] : 0;
+            this.cars += data["차량번호"].length ? data["차량번호"].length : 0;
             this.guests++;
         });
     }

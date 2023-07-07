@@ -17,8 +17,14 @@
 				{{ date.date }}
 			</p>
 			<ng-container *ngIf="!isPassed(date.date) && date.date !== 0">
-				<manager-content-food [date]="getDate(date.date)"></manager-content-food>
-				<manager-content-flat-bench [date]="getDate(date.date)"></manager-content-flat-bench>
+				<p class="content"
+				   [class.expired]="getContent(date.date, '식사').expired"
+				   *ngFor="let type of typeList">
+					{{getContent(date.date, type).text}}
+					<span *ngIf="!getContent(date.date, type).expired">
+						{{getContent(date.date, type).ratio}}
+					</span>
+				</p>
 				<p class="content">
 					주차<span>{{carRatio(date.date)}}</span>
 				</p>
