@@ -8,18 +8,19 @@ import { MatDialog } from "@angular/material/dialog";
 import { ReservationDialogComponent } from "reservation/reservation-dialog/reservation-dialog.component";
 
 interface Table {
-    id: string;
-    date: string;
-    type: "평상" | "식사" | "객실";
-    name: string;
-    status: string;
-    order: string;
-    memo: string;
-    money: number;
-    checked: boolean;
-    tel: string;
-    cars: string;
-    managerMemo: string;
+    id?: string;
+    date?: string;
+    type?: "평상" | "식사" | "객실";
+    name?: string;
+    status?: string;
+    order?: string;
+    memo?: string;
+    money?: number;
+    checked?: boolean;
+    tel?: string;
+    cars?: string;
+    managerMemo?: string;
+    changeMode?: Table;
 }
 
 interface Filter {
@@ -178,6 +179,50 @@ export class ManagerTableComponent implements OnInit {
                 checked: false,
                 managerMemo: model["관리자메모"],
             };
+            if (model["수정내용"]) {
+                item.changeMode = {};
+                if (model["수정내용"]["예약일"]) {
+                    item.changeMode.date = `${model["수정내용"]["예약일"].slice(5)}`;
+                }
+                if (model["수정내용"]["예약시간"]) {
+                    item.changeMode.date = model["수정내용"]["예약일"]
+                        ? `${model["수정내용"]["예약일"]} ${model["수정내용"]["예약시간"]}시`
+                        : `${model["예약일"]} ${model["예약시간"]}시`;
+                }
+                if (model["수정내용"]["예약유형"]) {
+                    item.changeMode.type = model["수정내용"]["예약유형"];
+                }
+                if (model["수정내용"]["성함"] || model["수정내용"]["인원"]) {
+                    item.changeMode.name = `${model["수정내용"]["성함"] ? model["수정내용"]["성함"] : model["성함"]}(${
+                        model["수정내용"]["인원"] ? model["수정내용"]["인원"] : model["인원"]
+                    })`;
+                }
+                if (model["수정내용"]["상태"]) {
+                    item.changeMode.status = model["수정내용"]["상태"];
+                }
+                if (
+                    model["수정내용"]["평상"] ||
+                    model["수정내용"]["테이블"] ||
+                    model["수정내용"]["능이백숙"] ||
+                    model["수정내용"]["백숙"] ||
+                    model["수정내용"]["버섯찌개"] ||
+                    model["수정내용"]["버섯찌개2"]
+                ) {
+                    item.changeMode.order = this._getOrder(model["수정내용"]);
+                }
+                if (model["수정내용"]["메모"]) {
+                    item.changeMode.memo = model["수정내용"]["메모"];
+                }
+                if (model["수정내용"]["차량번호"]) {
+                    item.changeMode.cars = this._getCars(model["수정내용"]);
+                }
+                if (model["수정내용"]["전화번호"]) {
+                    item.changeMode.tel = model["수정내용"]["전화번호"];
+                }
+                if (model["수정내용"]["관리자메모"]) {
+                    item.changeMode.managerMemo = model["수정내용"]["관리자메모"];
+                }
+            }
             result.push(item);
         });
         this.dataSource = new MatTableDataSource(result);
@@ -284,12 +329,12 @@ export class ManagerTableComponent implements OnInit {
         if (["예약", "방문"].includes(status)) {
             model["입금확인"] = true;
         }
-        this.DBService.edit(model);
+        this.DBService.set(model);
     }
 
     async clickTable(element: any) {
         if (this.editMode) {
-            let model = this.db.filter((v) => v.id === element.id)[0];
+            let model = JSON.parse(JSON.stringify(this.db.filter((v) => v.id === element.id)[0]));
             this.reservationService.formData$.next(model);
             this.reservationService.bookingStep$.next(1);
             this.dialog.open(ReservationDialogComponent);

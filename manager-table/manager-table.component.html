@@ -135,7 +135,8 @@
 
 	<ng-container matColumnDef="status">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>상태</th>
-		<td mat-cell *matCellDef="let element" [matMenuTriggerFor]="menu">
+		<td mat-cell *matCellDef="let element" [matMenuTriggerFor]="menu"
+			[class.needToCheck]="(element.status === '대기' || element.status === '수정')">
 			{{element.status}}<span *ngIf="element.type === '평상' && element.money">({{element.money | number}}원)</span>
 			<mat-menu #menu="matMenu">
 				<button mat-menu-item *ngIf="element.status !== '예약'" (click)="clickStatus(element, '예약')">예약</button>
@@ -147,22 +148,38 @@
 
 	<ng-container matColumnDef="date">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>날짜</th>
-		<td mat-cell *matCellDef="let element" (click)="clickTable(element)"> {{element.date}} </td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">
+			{{element.date}}
+			<span *ngIf="element.changeMode && element.changeMode.date"
+				  class="needToCheck">{{element.changeMode.date}}</span>
+		</td>
 	</ng-container>
 
 	<ng-container matColumnDef="type">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>유형</th>
-		<td mat-cell *matCellDef="let element" (click)="clickTable(element)"> {{element.type}} </td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">
+			{{element.type}}
+			<span *ngIf="element.changeMode && element.changeMode.type"
+				  class="needToCheck">{{element.changeMode.type}}</span>
+		</td>
 	</ng-container>
 
 	<ng-container matColumnDef="name">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>이름</th>
-		<td mat-cell *matCellDef="let element" (click)="clickTable(element)"> {{element.name}} </td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">
+			{{element.name}}
+			<span *ngIf="element.changeMode && element.changeMode.name"
+				  class="needToCheck">{{element.changeMode.name}}</span>
+		</td>
 	</ng-container>
 
 	<ng-container matColumnDef="order">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>주문</th>
-		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">{{element.order}}</td>
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">
+			{{element.order}}
+			<span *ngIf="element.changeMode && element.changeMode.order"
+				  class="needToCheck">{{element.changeMode.order}}</span>
+		</td>
 	</ng-container>
 
 	<ng-container matColumnDef="more">
@@ -208,24 +225,38 @@
 
 	<ng-container matColumnDef="car">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>차량</th>
-		<td mat-cell *matCellDef="let element" [class.warning]="element.cars===''">{{element.cars}}</td>
+		<td mat-cell *matCellDef="let element" [class.warning]="element.cars===''">
+			{{element.cars}}
+			<span *ngIf="element.changeMode && element.changeMode.cars"
+				  class="needToCheck">{{element.changeMode.cars}}</span>
+		</td>
 	</ng-container>
 
 	<ng-container matColumnDef="tel">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>TEL</th>
-		<td mat-cell *matCellDef="let element">{{element.tel}}</td>
+		<td mat-cell *matCellDef="let element">
+			{{element.tel}}
+			<span *ngIf="element.changeMode && element.changeMode.tel"
+				  class="needToCheck">{{element.changeMode.tel}}</span>
+		</td>
 	</ng-container>
 
 	<ng-container matColumnDef="managerMemo">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>관리자메모</th>
 		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">
-			{{element.managerMemo}}</td>
+			{{element.managerMemo}}
+			<span *ngIf="element.changeMode && element.changeMode.managerMemo"
+				  class="needToCheck">{{element.changeMode.managerMemo}}</span>
+		</td>
 	</ng-container>
 
 	<ng-container matColumnDef="memo">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>메모</th>
 		<td mat-cell *matCellDef="let element" (click)="clickTable(element)">
-			{{element.memo}}</td>
+			{{element.memo}}
+			<span *ngIf="element.changeMode && element.changeMode.memo"
+				  class="needToCheck">{{element.changeMode.memo}}</span>
+		</td>
 	</ng-container>
 
 	<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
