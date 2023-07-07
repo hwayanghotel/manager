@@ -3,7 +3,7 @@ import { ManagerFilter } from "manager/manager-table/manager-table.component";
 import { CalendarComponent } from "reservation/calendar/calendar.component";
 import { HolidayService } from "reservation/service/holiday.service";
 import * as Moment from "moment";
-import { DBService, IDBService } from "reservation/service/DB.service";
+import { DBService, IUserDB } from "reservation/service/DB.service";
 import { MAX_RESERVATION } from "reservation/service/reservation.service";
 
 @Component({
@@ -24,7 +24,7 @@ export class ManagerCalendarComponent extends CalendarComponent {
     private _setDailyCarNumber() {
         this.DBService.customerDB$.subscribe((data) => {
             this.cars = [];
-            (data as IDBService[])
+            (data as IUserDB[])
                 .filter(
                     (v) =>
                         new Date(v["예약일"]).getFullYear() === this.currentYear &&

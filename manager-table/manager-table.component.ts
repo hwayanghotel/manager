@@ -3,7 +3,7 @@ import { MatSort } from "@angular/material/sort";
 import { MatTableDataSource } from "@angular/material/table";
 import { ReservationService } from "reservation/service/reservation.service";
 import * as Moment from "moment";
-import { DBService, IDBService } from "reservation/service/DB.service";
+import { DBService, IUserDB } from "reservation/service/DB.service";
 import { MatDialog } from "@angular/material/dialog";
 import { ReservationDialogComponent } from "reservation/reservation-dialog/reservation-dialog.component";
 
@@ -63,7 +63,7 @@ export class ManagerTableComponent implements OnInit {
         "memo",
     ];
     dataSource: MatTableDataSource<any>;
-    db: IDBService[] = [];
+    db: IUserDB[] = [];
     filter = ManagerFilter;
     editMode: boolean = false;
     deleteMode: boolean = false;
@@ -77,7 +77,7 @@ export class ManagerTableComponent implements OnInit {
         private dialog: MatDialog
     ) {
         this.DBService.customerDB$.subscribe((db) => {
-            this.db = db as IDBService[];
+            this.db = db as IUserDB[];
             this.db.sort((a, b) => this._sortList(a, b));
             this.setList();
         });
@@ -184,7 +184,7 @@ export class ManagerTableComponent implements OnInit {
         this.dataSource.sort = this.sort;
     }
 
-    private _sortList(a: IDBService, b: IDBService) {
+    private _sortList(a: IUserDB, b: IUserDB) {
         // 1) "날짜"가 빠를수록 정렬
         const dateA = new Date(a["예약일"]);
         const dateB = new Date(b["예약일"]);
@@ -215,8 +215,8 @@ export class ManagerTableComponent implements OnInit {
         return 0; // 동일한 경우 유지
     }
 
-    private _getFilteredDB(): IDBService[] {
-        let db: IDBService[] = JSON.parse(JSON.stringify(this.db));
+    private _getFilteredDB(): IUserDB[] {
+        let db: IUserDB[] = JSON.parse(JSON.stringify(this.db));
         if (this.filter.date[0]) {
             db = db.filter((v) => v["예약일"] >= this.filter.date[0].format("YYYY-MM-DD"));
         }
@@ -245,7 +245,7 @@ export class ManagerTableComponent implements OnInit {
         return db;
     }
 
-    private _getOrder(model: IDBService): string {
+    private _getOrder(model: IUserDB): string {
         let order: string = "";
         if (model["평상"]) {
             order += `평상:${model["평상"]},`;
@@ -268,7 +268,7 @@ export class ManagerTableComponent implements OnInit {
         return order;
     }
 
-    private _getCars(model: IDBService): string {
+    private _getCars(model: IUserDB): string {
         let cars: string = "";
         if (model["차량번호"]) {
             model["차량번호"].forEach((car) => {

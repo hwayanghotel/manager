@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from "@angular/core";
 import { MatTabGroup } from "@angular/material/tabs";
 import { ActivatedRoute } from "@angular/router";
 import { ManagerService } from "manager/manager.service";
-import { DBService, IDBService } from "reservation/service/DB.service";
+import { DBService, IUserDB } from "reservation/service/DB.service";
 import * as Moment from "moment";
 
 @Component({
@@ -30,7 +30,7 @@ export class ManagerComponent implements OnInit {
         });
     }
 
-    private _setIndicators(dailyData: IDBService[]) {
+    private _setIndicators(dailyData: IUserDB[]) {
         this.nyBaeksuk = 0;
         this.baeksuk = 0;
         this.mushroom = 0;
