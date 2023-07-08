@@ -165,11 +165,9 @@ export class ManagerTableComponent implements OnInit {
         db.forEach((model) => {
             let item: Table = {
                 id: model.id,
-                date: model["예약시간"]
-                    ? `${model["예약일"].slice(5)} ${model["예약시간"]}시`
-                    : `${model["예약일"].slice(5)}`,
+                date: this._getDate(model),
                 type: model["예약유형"],
-                name: `${model["성함"]}(${model["인원"]})`,
+                name: `${model["성함"]}(${model["인원"] ? model["인원"] : "?"})`,
                 status: model["상태"],
                 order: this._getOrder(model),
                 memo: model["메모"],
@@ -263,10 +261,10 @@ export class ManagerTableComponent implements OnInit {
     private _getFilteredDB(): IUserDB[] {
         let db: IUserDB[] = JSON.parse(JSON.stringify(this.db));
         if (this.filter.date[0]) {
-            db = db.filter((v) => v["예약일"] >= this.filter.date[0].format("YYYY-MM-DD"));
+            db = db.filter((v) => v["만료일"] >= this.filter.date[0].format("YYYY-MM-DD"));
         }
         if (this.filter.date[1]) {
-            db = db.filter((v) => Moment(v["예약일"]) <= this.filter.date[1]);
+            db = db.filter((v) => Moment(v["만료일"]) <= this.filter.date[1]);
         }
         if (this.filter.states.length > 0) {
             db = db.filter((v) => this.filter.states.includes(v["상태"]));
@@ -290,25 +288,44 @@ export class ManagerTableComponent implements OnInit {
         return db;
     }
 
+    private _getDate(model: IUserDB): string {
+        const startDate = Moment(model["예약일"]);
+
+        let dateText: string = startDate.format("M/D");
+        if (model["이용박수"]) {
+            const endDate = Moment(model["예약일"]).add(model["이용박수"], "days");
+            dateText = `${dateText}~${endDate.format(startDate.month() === endDate.month() ? "D" : "M/D")}(${
+                model["이용박수"]
+            })`;
+        }
+        if (model["예약시간"]) {
+            dateText = `${dateText} ${model["예약시간"]}시`;
+        }
+        return dateText;
+    }
+
     private _getOrder(model: IUserDB): string {
         let order: string = "";
+        if (model["객실"]) {
+            order += `${model["객실"]}, `;
+        }
         if (model["평상"]) {
-            order += `평상:${model["평상"]},`;
+            order += `평상:${model["평상"]}, `;
         }
         if (model["테이블"]) {
-            order += `데크:${model["테이블"]},`;
+            order += `데크:${model["테이블"]}, `;
         }
         if (model["능이백숙"]) {
-            order += `능이:${model["능이백숙"]},`;
+            order += `능이:${model["능이백숙"]}, `;
         }
         if (model["백숙"]) {
-            order += `한방:${model["백숙"]},`;
+            order += `한방:${model["백숙"]}, `;
         }
         if (model["버섯찌개"]) {
-            order += `버섯:${model["버섯찌개"]},`;
+            order += `버섯:${model["버섯찌개"]}, `;
         }
         if (model["버섯찌개2"]) {
-            order += `버섯2인:${model["버섯찌개2"]},`;
+            order += `버섯2인:${model["버섯찌개2"]}, `;
         }
         return order;
     }

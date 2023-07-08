@@ -81,6 +81,9 @@ p.content {
 
     &.expired {
         color: #e34c4c;
-        pointer-events: none;
+    }
+
+    &.room {
+        color: black;
     }
 }

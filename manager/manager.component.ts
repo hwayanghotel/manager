@@ -4,6 +4,7 @@ import { ActivatedRoute } from "@angular/router";
 import { ManagerService } from "manager/manager.service";
 import { DBService, IUserDB } from "reservation/service/DB.service";
 import * as Moment from "moment";
+import { UploaderService } from "reservation/service/uploader.service";
 
 @Component({
     selector: "manager",
@@ -21,12 +22,21 @@ export class ManagerComponent implements OnInit {
     cars = 0;
     guests = 0;
 
-    constructor(private route: ActivatedRoute, private DBService: DBService, private managerService: ManagerService) {
+    constructor(
+        private route: ActivatedRoute,
+        private DBService: DBService,
+        private managerService: ManagerService,
+        private uploader: UploaderService
+    ) {
         this.DBService.customerDB$.subscribe((db) => {
             const dailyData = db
                 .filter((v) => v["예약일"] === this.today)
                 .filter((v) => ["예약", "방문"].includes(v["상태"]));
             this._setIndicators(dailyData);
+
+            // setTimeout(() => {
+            //     this.uploader.uploadPensionDB(false);
+            // }, 5000);
         });
     }
 
@@ -42,7 +52,7 @@ export class ManagerComponent implements OnInit {
             this.baeksuk += data["백숙"] ? data["백숙"] : 0;
             this.mushroom += data["버섯찌개"] ? data["버섯찌개"] : 0;
             this.mushroom2 += data["버섯찌개2"] ? data["버섯찌개2"] : 0;
-            this.cars += data["차량번호"].length ? data["차량번호"].length : 0;
+            this.cars += data["차량번호"] && data["차량번호"].length ? data["차량번호"].length : 0;
             this.guests++;
         });
     }

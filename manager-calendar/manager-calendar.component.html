@@ -12,11 +12,17 @@
 	</div>
 
 	<div class="date-table" *ngFor="let week of calendar">
-		<div class="date-box" *ngFor="let date of week" [class.disabled]="isPassed(date.date)" (click)="details(date)">
+		<div class="date-box" *ngFor="let date of week" [class.disabled]="isPassed(date.date)"
+			 (click)="details(date)">
 			<p *ngIf="date.date !== 0" [class.holiday]="date.isHoliday">
 				{{ date.date }}
 			</p>
 			<ng-container *ngIf="!isPassed(date.date) && date.date !== 0">
+				<ng-container *ngFor="let room of roomTypes">
+					<p class="content room" *ngIf="getRoomInfo(date.date, room) !=''"
+					   [style.background-color]="getBgColor(date.date, room)">
+						{{room}}:{{getRoomInfo(date.date, room)}}</p>
+				</ng-container>
 				<p class="content"
 				   [class.expired]="getContent(date.date, '식사').expired"
 				   *ngFor="let type of typeList">

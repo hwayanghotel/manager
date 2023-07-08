@@ -7,6 +7,13 @@ import { DBService, IUserDB } from "reservation/service/DB.service";
 import { MAX_RESERVATION, ReservationService } from "reservation/service/reservation.service";
 import { MatDialog } from "@angular/material/dialog";
 
+interface IRoomInfo {
+    [room: string]: {
+        text: string;
+        color: string;
+    };
+}
+
 @Component({
     selector: "manager-calendar",
     templateUrl: "./manager-calendar.component.html",
@@ -14,7 +21,9 @@ import { MatDialog } from "@angular/material/dialog";
 })
 export class ManagerCalendarComponent extends CalendarComponent {
     @Output() moveTable = new EventEmitter<void>();
-    private cars: number[] = [];
+    private cars: any = {};
+    rooms: any = {};
+    roomTypes = ["능운대", "학소대", "와룡암", "첨성대"];
 
     constructor(
         override holidayService: HolidayService,
@@ -23,28 +32,69 @@ export class ManagerCalendarComponent extends CalendarComponent {
         override reservationService: ReservationService
     ) {
         super(holidayService, DBService, dialog, reservationService);
-        this._setDailyCarNumber();
+        this.DBService.customerDB$.subscribe((data) => {
+            const filteredData = data.filter((v) => ["예약", "방문"].includes(v["상태"]));
+            this._setDailyCarNumber(filteredData);
+            this._setDailyRoom(filteredData);
+        });
     }
 
-    private _setDailyCarNumber() {
-        this.DBService.customerDB$.subscribe((data) => {
-            this.cars = [];
-            (data as IUserDB[])
-                .filter(
-                    (v) =>
-                        new Date(v["예약일"]).getFullYear() === this.currentYear &&
-                        new Date(v["예약일"]).getMonth() === this.currentMonth - 1 &&
-                        ["예약", "방문"].includes(v["상태"])
-                )
-                .forEach((v) => {
-                    const index = new Date(v["예약일"]).getDate();
-                    this.cars[index] = 0;
-                    if (this.cars[index]) {
-                        this.cars[index] += v["차량번호"] && v["차량번호"].length;
-                    } else {
-                        this.cars[index] = v["차량번호"] && v["차량번호"].length;
+    private _setDailyCarNumber(data: IUserDB[]) {
+        this.cars = [];
+        data.forEach((v) => {
+            const index = v["예약일"];
+            this.cars[index] = 0;
+            if (this.cars[index]) {
+                this.cars[index] += v["차량번호"] && v["차량번호"].length;
+            } else {
+                this.cars[index] = v["차량번호"] && v["차량번호"].length;
+            }
+        });
+    }
+
+    private _setDailyRoom(data: IUserDB[]) {
+        const colors = [
+            "LavenderBlush",
+            "LightCyan",
+            "LightGoldenRodYellow",
+            "LightGreen",
+            "LightPink",
+            "LightSalmon",
+            "LightSkyBlue",
+            "LightSteelBlue",
+        ];
+        let colorIndex = 0;
+        let colorFlag = false;
+
+        this.rooms = [];
+        data.forEach((v) => {
+            this.roomTypes.forEach((room) => {
+                let bgColor: string = "";
+                if (
+                    v["이용박수"] > 1 ||
+                    ["능운대", "학소대", "와룡암", "첨성대"].filter((room) => v["객실"].includes(room)).length > 1
+                ) {
+                    bgColor = colors[colorIndex];
+                    colorFlag = true;
+                }
+                for (let days = 0; days < v["이용박수"]; days++) {
+                    if (v["객실"].includes(room)) {
+                        const index = Moment(v["예약일"]).add(days, "days").format("YYYY-MM-DD");
+                        if (!this.rooms[index]) {
+                            this.rooms[index] = {};
+                        }
+                        this.rooms[index][room] = {
+                            text: v["성함"],
+                            bgColor: bgColor,
+                        };
                     }
-                });
+                }
+            });
+            if (colorFlag) {
+                colorIndex++;
+                colorIndex %= colors.length;
+                colorFlag = false;
+            }
         });
     }
 
@@ -58,7 +108,24 @@ export class ManagerCalendarComponent extends CalendarComponent {
     }
 
     carRatio(date: number): string {
-        const cars = this.cars[date] ? this.cars[date] : 0;
-        return `(${cars}/${MAX_RESERVATION["주차"]})`;
+        const today = Moment(this.selectedDate).date(date).format("YYYY-MM-DD");
+        const cars = this.cars[today] ? this.cars[today] : 0;
+        return ` (${cars}/${MAX_RESERVATION["주차"]})`;
+    }
+
+    getRoomInfo(date: number, room: string): string {
+        const today = Moment(this.selectedDate).date(date).format("YYYY-MM-DD");
+        if (this.rooms[today] && this.rooms[today][room]) {
+            return this.rooms[today][room].text;
+        }
+        return "";
+    }
+
+    getBgColor(date: number, room: string): string {
+        const today = Moment(this.selectedDate).date(date).format("YYYY-MM-DD");
+        if (this.rooms[today] && this.rooms[today][room]) {
+            return this.rooms[today][room].bgColor;
+        }
+        return "";
     }
 }
