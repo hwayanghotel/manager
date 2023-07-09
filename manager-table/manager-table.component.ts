@@ -379,8 +379,7 @@ export class ManagerTableComponent implements OnInit {
                 this.DBService.delete(v.id);
             });
         this.deleteMode = false;
-        this.checkMode = false;
-        this.totalChecked = false;
+        this._setCheckTable();
     }
 
     changeSMSMode() {
