@@ -128,4 +128,9 @@ export class ManagerCalendarComponent extends CalendarComponent {
         }
         return "";
     }
+
+    override isPassed(date: number): boolean {
+        const baseDate = Moment(this.selectedDate).date(date);
+        return baseDate.format("YYMMDDHH") < Moment().format("YYMMDDHH");
+    }
 }
