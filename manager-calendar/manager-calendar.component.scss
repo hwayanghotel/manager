@@ -98,3 +98,9 @@ p.content {
         }
     }
 }
+
+@media only screen and (max-width: 550px) {
+    .content {
+        margin: 0.2rem 0;
+    }
+}

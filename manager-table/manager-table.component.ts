@@ -495,7 +495,7 @@ export class ManagerTableComponent implements OnInit {
 
 const SMSTextBeforeVisit = `NAME님 안녕하세요. 능운대펜션입니다. 방문일이 다가와 연락드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-http://172.30.1.82:4200/#/reservation?URIRESOURCE
+https://hwayanghotel.github.io/#/reservation?URIRESOURCE
 감사합니다.`;
 
 const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. 예약을 위한 입금 정보를 안내드립니다.
@@ -505,11 +505,11 @@ const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. �
 
 const SMStextForConfirm = `NAME님 안녕하세요. 능운대펜션입니다. TYPE 예약 확정되어 안내드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-http://172.30.1.82:4200/#/reservation?URIRESOURCE
+https://hwayanghotel.github.io/#/reservation?URIRESOURCE
 감사합니다.`;
 
 const SMStextForBooking = `안녕하세요. 능운대펜션입니다.
 아래 링크를 통해 <객실>, <평상>, <식사> 예약이 가능합니다.
 공원 내 입차를 희망하시면, <차량정보>도 함께 적어주세요!
-http://172.30.1.82:4200/#/reservation
+https://hwayanghotel.github.io/#/reservation
 감사합니다.`;
