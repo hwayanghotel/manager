@@ -24,6 +24,13 @@ export class ManagerCalendarComponent extends CalendarComponent {
     private cars: any = {};
     rooms: any = {};
     roomTypes = ["능운대", "학소대", "와룡암", "첨성대"];
+    filter = {
+        showPassed: false,
+        flatBench: true,
+        food: true,
+        room: true,
+        car: true,
+    };
 
     constructor(
         override holidayService: HolidayService,

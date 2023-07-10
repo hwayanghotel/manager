@@ -1,5 +1,5 @@
 .calendar {
-    margin: 3rem 0;
+    margin: 1rem 0;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -85,5 +85,16 @@ p.content {
 
     &.room {
         color: black;
+    }
+}
+
+.filter-box {
+    button {
+        margin: 0.5rem 0.2rem;
+
+        &.off {
+            background-color: white !important;
+            color: black;
+        }
     }
 }

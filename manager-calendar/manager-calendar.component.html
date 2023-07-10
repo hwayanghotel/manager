@@ -1,12 +1,26 @@
+<div class="filter-box">
+	<button mat-raised-button color="primary" [class.off]="!filter.showPassed"
+			(click)="filter.showPassed = !filter.showPassed">이전예약 {{filter.showPassed? '표시' : '미표시'}}
+	</button>
+	<button mat-raised-button color="primary" [class.off]="!filter.flatBench"
+			(click)="filter.flatBench = !filter.flatBench">평상{{filter.flatBench? '표시' : '미표시'}}
+	</button>
+	<button mat-raised-button color="primary" [class.off]="!filter.food"
+			(click)="filter.food = !filter.food">식사{{filter.food? '표시' : '미표시'}}
+	</button>
+	<button mat-raised-button color="primary" [class.off]="!filter.room"
+			(click)="filter.room = !filter.room">객실{{filter.room? '표시' : '미표시'}}
+	</button>
+	<button mat-raised-button color="primary" [class.off]="!filter.car"
+			(click)="filter.car = !filter.car">주차{{filter.car? '표시' : '미표시'}}
+	</button>
+</div>
 <div class="calendar">
 	<div class="month-info">
 		<button [class.disabled]="isPassed(-1)" (click)="moveMonth(-1)">&lt;</button>
 		<p>{{ currentYear }}.{{ currentMonth }}</p>
 		<button (click)="moveMonth(+1)">&gt;</button>
 	</div>
-
-	<ng-content></ng-content>
-
 	<div class="week">
 		<p *ngFor="let day of week">{{day}}</p>
 	</div>
@@ -17,21 +31,22 @@
 			<p *ngIf="date.date !== 0" [class.holiday]="date.isHoliday">
 				{{ date.date }}
 			</p>
-			<ng-container *ngIf="!isPassed(date.date) && date.date !== 0">
+			<ng-container *ngIf="(!isPassed(date.date) || filter.showPassed) && date.date !== 0">
 				<ng-container *ngFor="let room of roomTypes">
-					<p class="content room" *ngIf="getRoomInfo(date.date, room) !=''"
+					<p class="content room" *ngIf="filter.room && getRoomInfo(date.date, room) !=''"
 					   [style.background-color]="getBgColor(date.date, room)">
 						{{room}}:{{getRoomInfo(date.date, room)}}</p>
 				</ng-container>
-				<p class="content"
-				   [class.expired]="getContent(date.date, '식사').expired"
-				   *ngFor="let type of typeList">
-					{{getContent(date.date, type).text}}
-					<span *ngIf="!getContent(date.date, type).expired">
-						{{getContent(date.date, type).ratio}}
-					</span>
-				</p>
-				<p class="content">
+				<ng-container *ngFor="let type of typeList">
+					<p class="content" *ngIf="filter[(type=='식사'? 'food' : 'flatBench')]"
+					   [class.expired]="getContent(date.date, type).expired">
+						{{getContent(date.date, type).text}}
+						<span *ngIf="!getContent(date.date, type).expired">
+							{{getContent(date.date, type).ratio}}
+						</span>
+					</p>
+				</ng-container>
+				<p class="content" *ngIf="filter.car">
 					주차<span>{{carRatio(date.date)}}</span>
 				</p>
 			</ng-container>
