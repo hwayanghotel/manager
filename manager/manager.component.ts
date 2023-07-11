@@ -29,10 +29,8 @@ export class ManagerComponent implements OnInit {
         private uploader: UploaderService
     ) {
         this.DBService.customerDB$.subscribe((db) => {
-            const dailyData = db
-                .filter((v) => v["예약일"] === this.today)
-                .filter((v) => ["예약", "방문"].includes(v["상태"]));
-            this._setIndicators(dailyData);
+            this._setIndicators(db);
+            this._setCalenderDB(db);
 
             // setTimeout(() => {
             //     this.uploader.uploadPensionDB(false);
@@ -40,7 +38,22 @@ export class ManagerComponent implements OnInit {
         });
     }
 
-    private _setIndicators(dailyData: IUserDB[]) {
+    private _setCalenderDB(db: IUserDB[]) {
+        if (db.length && !this._needToUpdate) {
+            this._needToUpdate = true;
+            setTimeout(() => {
+                this.uploader.uploadCalenderDB();
+                this._needToUpdate = false;
+            }, 5000);
+        }
+    }
+    private _needToUpdate: boolean = false;
+
+    private _setIndicators(db: IUserDB[]) {
+        const dailyData = db
+            .filter((v) => v["예약일"] === this.today)
+            .filter((v) => ["예약", "방문"].includes(v["상태"]));
+
         this.nyBaeksuk = 0;
         this.baeksuk = 0;
         this.mushroom = 0;
@@ -48,10 +61,10 @@ export class ManagerComponent implements OnInit {
         this.cars = 0;
         this.guests = 0;
         dailyData.forEach((data) => {
-            this.nyBaeksuk += data["능이백숙"] ? data["능이백숙"] : 0;
-            this.baeksuk += data["백숙"] ? data["백숙"] : 0;
-            this.mushroom += data["버섯찌개"] ? data["버섯찌개"] : 0;
-            this.mushroom2 += data["버섯찌개2"] ? data["버섯찌개2"] : 0;
+            this.nyBaeksuk += data["능이백숙"] | 0;
+            this.baeksuk += data["백숙"] | 0;
+            this.mushroom += data["버섯찌개"] | 0;
+            this.mushroom2 += data["버섯찌개2"] | 0;
             this.cars += data["차량번호"] && data["차량번호"].length ? data["차량번호"].length : 0;
             this.guests++;
         });
