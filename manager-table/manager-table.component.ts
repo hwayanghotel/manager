@@ -180,12 +180,12 @@ export class ManagerTableComponent implements OnInit {
             if (model["수정내용"]) {
                 item.changeMode = {};
                 if (model["수정내용"]["예약일"]) {
-                    item.changeMode.date = `${model["수정내용"]["예약일"].slice(5)}`;
+                    item.changeMode.date = Moment(model["수정내용"]["예약일"]).format("M/D");
                 }
                 if (model["수정내용"]["예약시간"]) {
                     item.changeMode.date = model["수정내용"]["예약일"]
-                        ? `${model["수정내용"]["예약일"]} ${model["수정내용"]["예약시간"]}시`
-                        : `${model["예약일"]} ${model["예약시간"]}시`;
+                        ? `${Moment(model["수정내용"]["예약일"]).format("M/D")} ${model["수정내용"]["예약시간"]}시`
+                        : `${Moment(model["예약일"]).format("M/D")} ${model["예약시간"]}시`;
                 }
                 if (model["수정내용"]["예약유형"]) {
                     item.changeMode.type = model["수정내용"]["예약유형"];
@@ -199,14 +199,14 @@ export class ManagerTableComponent implements OnInit {
                     item.changeMode.status = model["수정내용"]["상태"];
                 }
                 if (
-                    model["수정내용"]["평상"] ||
-                    model["수정내용"]["테이블"] ||
-                    model["수정내용"]["능이백숙"] ||
-                    model["수정내용"]["백숙"] ||
-                    model["수정내용"]["버섯찌개"] ||
-                    model["수정내용"]["버섯찌개2"]
+                    model["수정내용"]["평상"] >= 0 ||
+                    model["수정내용"]["테이블"] >= 0 ||
+                    model["수정내용"]["능이백숙"] >= 0 ||
+                    model["수정내용"]["백숙"] >= 0 ||
+                    model["수정내용"]["버섯찌개"] >= 0 ||
+                    model["수정내용"]["버섯찌개2"] >= 0
                 ) {
-                    item.changeMode.order = this._getOrder(model["수정내용"]);
+                    item.changeMode.order = this._getChangedOrder(model);
                 }
                 if (model["수정내용"]["메모"]) {
                     item.changeMode.memo = model["수정내용"]["메모"];
@@ -304,27 +304,45 @@ export class ManagerTableComponent implements OnInit {
         return dateText;
     }
 
+    private _getChangedOrder(model: IUserDB | any): string {
+        let changed: IUserDB | any = model["수정내용"];
+        if (
+            changed["평상"] >= 0 ||
+            changed["테이블"] >= 0 ||
+            changed["능이백숙"] >= 0 ||
+            changed["백숙"] >= 0 ||
+            changed["버섯찌개"] >= 0 ||
+            changed["버섯찌개2"] >= 0
+        ) {
+            for (let item of ["평상", "테이블", "능이백숙", "백숙", "버섯찌개", "버섯찌개2"]) {
+                changed[item] = changed[item] >= 0 ? changed[item] : model[item];
+            }
+        }
+
+        return this._getOrder(changed);
+    }
+
     private _getOrder(model: IUserDB): string {
         let order: string = "";
         if (model["객실"]) {
             order += `${model["객실"]}, `;
         }
-        if (model["평상"]) {
+        if (model["평상"] !== null && model["평상"] >= 0) {
             order += `평상:${model["평상"]}, `;
         }
-        if (model["테이블"]) {
+        if (model["테이블"] !== null && model["테이블"] >= 0) {
             order += `데크:${model["테이블"]}, `;
         }
-        if (model["능이백숙"]) {
+        if (model["능이백숙"] !== null && model["능이백숙"] >= 0) {
             order += `능이:${model["능이백숙"]}, `;
         }
-        if (model["백숙"]) {
+        if (model["백숙"] !== null && model["백숙"] >= 0) {
             order += `한방:${model["백숙"]}, `;
         }
-        if (model["버섯찌개"]) {
+        if (model["버섯찌개"] !== null && model["버섯찌개"] >= 0) {
             order += `버섯:${model["버섯찌개"]}, `;
         }
-        if (model["버섯찌개2"]) {
+        if (model["버섯찌개2"] !== null && model["버섯찌개2"] >= 0) {
             order += `버섯2인:${model["버섯찌개2"]}, `;
         }
         return order;
@@ -495,7 +513,7 @@ export class ManagerTableComponent implements OnInit {
 
 const SMSTextBeforeVisit = `NAME님 안녕하세요. 능운대펜션입니다. 방문일이 다가와 연락드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-https://hwayanghotel.github.io/#/reservation?URIRESOURCE
+http://192.168.219.118:4200/#/reservation?URIRESOURCE
 감사합니다.`;
 
 const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. 예약을 위한 입금 정보를 안내드립니다.
@@ -505,11 +523,11 @@ const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. �
 
 const SMStextForConfirm = `NAME님 안녕하세요. 능운대펜션입니다. TYPE 예약 확정되어 안내드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-https://hwayanghotel.github.io/#/reservation?URIRESOURCE
+http://192.168.219.118:4200/#/reservation?URIRESOURCE
 감사합니다.`;
 
 const SMStextForBooking = `안녕하세요. 능운대펜션입니다.
 아래 링크를 통해 <객실>, <평상>, <식사> 예약이 가능합니다.
 공원 내 입차를 희망하시면, <차량정보>도 함께 적어주세요!
-https://hwayanghotel.github.io/#/reservation
+http://192.168.219.118:4200/#/reservation
 감사합니다.`;
