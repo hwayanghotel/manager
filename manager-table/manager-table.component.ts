@@ -18,7 +18,8 @@ interface Table {
     money?: number;
     checked?: boolean;
     tel?: string;
-    cars?: string;
+    cars?: string[];
+    visitedCars?: boolean[];
     managerMemo?: string;
     changeMode?: Table;
 }
@@ -171,7 +172,8 @@ export class ManagerTableComponent implements OnInit {
                 status: model["상태"],
                 order: this._getOrder(model),
                 memo: model["메모"],
-                cars: this._getCars(model),
+                cars: model["차량번호"],
+                visitedCars: model["차량방문"],
                 tel: model["전화번호"],
                 money: model["입금확인"] ? undefined : this.reservationService.getReservationCost(model),
                 checked: false,
@@ -212,7 +214,10 @@ export class ManagerTableComponent implements OnInit {
                     item.changeMode.memo = model["수정내용"]["메모"];
                 }
                 if (model["수정내용"]["차량번호"]) {
-                    item.changeMode.cars = this._getCars(model["수정내용"]);
+                    item.changeMode.cars = model["수정내용"]["차량번호"];
+                }
+                if (model["수정내용"]["차량방문"]) {
+                    item.changeMode.visitedCars = model["수정내용"]["차량방문"];
                 }
                 if (model["수정내용"]["전화번호"]) {
                     item.changeMode.tel = model["수정내용"]["전화번호"];
@@ -346,16 +351,6 @@ export class ManagerTableComponent implements OnInit {
             order += `버섯2인:${model["버섯찌개2"]}, `;
         }
         return order;
-    }
-
-    private _getCars(model: IUserDB): string {
-        let cars: string = "";
-        if (model["차량번호"]) {
-            model["차량번호"].forEach((car) => {
-                cars += `${car}, `;
-            });
-        }
-        return cars;
     }
 
     clickStatus(element: any, status: any) {

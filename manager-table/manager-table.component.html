@@ -225,10 +225,14 @@
 
 	<ng-container matColumnDef="car">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>차량</th>
-		<td mat-cell *matCellDef="let element" [class.warning]="element.cars===''" (click)="clickTable(element, 5)">
-			<span *ngIf="element.changeMode && element.changeMode.cars"
-				  class="needToCheck">{{element.changeMode.cars}}<br /></span>
-			{{element.cars}}
+		<td mat-cell *matCellDef="let element" [class.warning]="!element.cars || element.cars.length===0"
+			(click)="clickTable(element, 5)">
+			<span *ngIf="element.changeMode && element.changeMode.cars && element.changeMode.cars.length>0"
+				  class="needToCheck">
+				<span *ngFor="let car of element.changeMode.cars">{{car}},</span><br />
+			</span>
+			<span *ngFor="let car of element.cars; let index = index"
+				  [class.visited]="element.visitedCars && element.visitedCars[index]">{{car}}, </span>
 		</td>
 	</ng-container>
 
