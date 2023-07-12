@@ -173,7 +173,7 @@ export class ManagerTableComponent implements OnInit {
                 memo: model["메모"],
                 cars: this._getCars(model),
                 tel: model["전화번호"],
-                money: model["입금확인"] ? 0 : this.reservationService.getReservationCost(model),
+                money: model["입금확인"] ? undefined : this.reservationService.getReservationCost(model),
                 checked: false,
                 managerMemo: model["관리자메모"],
             };
@@ -367,11 +367,15 @@ export class ManagerTableComponent implements OnInit {
         this.DBService.set(model);
     }
 
-    async clickTable(element: any) {
+    async clickTable(element: any, step: number) {
         if (this.editMode) {
             let model = JSON.parse(JSON.stringify(this.db.filter((v) => v.id === element.id)[0]));
+            if (step === 3 && model["예약유형"] === "식사") {
+                //평상 타입이면 3, 식사 타입이면 4로 가면 된다.
+                step = 4;
+            }
             this.reservationService.formData$.next(model);
-            this.reservationService.bookingStep$.next(1);
+            this.reservationService.bookingStep$.next(step);
             this.dialog.open(ReservationDialogComponent);
         } else if (this.deleteMode || this.SMSMode) {
             element.checked = !element.checked;
@@ -513,7 +517,7 @@ export class ManagerTableComponent implements OnInit {
 
 const SMSTextBeforeVisit = `NAME님 안녕하세요. 능운대펜션입니다. 방문일이 다가와 연락드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-https://hwayanghotel.github.io/#/reservation?URIRESOURCE
+http://192.168.219.118:4200/#/reservation?URIRESOURCE
 감사합니다.`;
 
 const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. 예약을 위한 입금 정보를 안내드립니다.
@@ -523,11 +527,11 @@ const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. �
 
 const SMStextForConfirm = `NAME님 안녕하세요. 능운대펜션입니다. TYPE 예약 확정되어 안내드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-https://hwayanghotel.github.io/#/reservation?URIRESOURCE
+http://192.168.219.118:4200/#/reservation?URIRESOURCE
 감사합니다.`;
 
 const SMStextForBooking = `안녕하세요. 능운대펜션입니다.
 아래 링크를 통해 <객실>, <평상>, <식사> 예약이 가능합니다.
 공원 내 입차를 희망하시면, <차량정보>도 함께 적어주세요!
-https://hwayanghotel.github.io/#/reservation
+http://192.168.219.118:4200/#/reservation
 감사합니다.`;
