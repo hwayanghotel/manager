@@ -20,7 +20,11 @@ export class ManagerComponent implements OnInit {
     mushroom = 0;
     mushroom2 = 0;
     cars = 0;
+    visitedCars = 0;
     guests = 0;
+    guestRoom = 0;
+    guestFlatBench = 0;
+    guestFood = 0;
 
     constructor(
         private route: ActivatedRoute,
@@ -59,13 +63,21 @@ export class ManagerComponent implements OnInit {
         this.mushroom = 0;
         this.mushroom2 = 0;
         this.cars = 0;
+        this.visitedCars = 0;
         this.guests = 0;
+        this.guestRoom = 0;
+        this.guestFlatBench = 0;
+        this.guestFood = 0;
         dailyData.forEach((data) => {
             this.nyBaeksuk += data["능이백숙"] | 0;
             this.baeksuk += data["백숙"] | 0;
             this.mushroom += data["버섯찌개"] | 0;
             this.mushroom2 += data["버섯찌개2"] | 0;
-            this.cars += data["차량번호"] && data["차량번호"].length ? data["차량번호"].length : 0;
+            this.cars += data["차량번호"] ? data["차량번호"].length : 0;
+            this.visitedCars += data["차량방문"] ? data["차량방문"].filter((v) => v).length : 0;
+            this.guestRoom += Number(data["예약유형"] === "객실");
+            this.guestFlatBench += Number(data["예약유형"] === "평상");
+            this.guestFood += Number(data["예약유형"] === "식사");
             this.guests++;
         });
     }

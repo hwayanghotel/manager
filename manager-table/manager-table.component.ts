@@ -28,18 +28,14 @@ interface Filter {
     open: boolean;
     date: Moment.Moment[];
     states: string[];
-    tel: number;
-    name: string;
-    car: string;
+    hideVisitedCar: boolean;
 }
 
 const initFilter: Filter = {
     open: false,
     date: [Moment(Moment().format("YYYY-MM-DD")), undefined],
     states: ["대기", "수정", "예약", "방문"],
-    tel: undefined,
-    name: undefined,
-    car: undefined,
+    hideVisitedCar: false,
 };
 export let ManagerFilter: Filter = JSON.parse(JSON.stringify(initFilter));
 ManagerFilter.date[0] = Moment(ManagerFilter.date[0]);
@@ -67,10 +63,10 @@ export class ManagerTableComponent implements OnInit {
     dataSource: MatTableDataSource<any>;
     db: IUserDB[] = [];
     filter = ManagerFilter;
-    editMode: boolean = false;
     deleteMode: boolean = false;
     checkMode: boolean = true;
     SMSMode: boolean = false;
+    parkingMode: boolean = false;
     totalChecked: boolean = false;
 
     constructor(
@@ -274,20 +270,16 @@ export class ManagerTableComponent implements OnInit {
         if (this.filter.states.length > 0) {
             db = db.filter((v) => this.filter.states.includes(v["상태"]));
         }
-        if (this.filter.name) {
-            db = db.filter((v) => v["성함"].includes(this.filter.name));
-        }
-        if (this.filter.tel) {
-            db = db.filter((v) => v["전화번호"].replace(/-/g, "").includes(String(this.filter.tel)));
-        }
-        if (this.filter.car) {
-            db = db.filter((v) => {
-                for (let car of v["차량번호"]) {
-                    if (car.includes(this.filter.car)) {
-                        return true;
-                    }
-                }
-                return false;
+        if (this.filter.hideVisitedCar) {
+            db = db.map((user) => {
+                return {
+                    ...user,
+                    차량번호:
+                        user["차량번호"] && user["차량방문"]
+                            ? user["차량번호"].filter((v, index) => !user["차량방문"][index])
+                            : undefined,
+                    차량방문: user["차량방문"] ? user["차량방문"].filter((v) => !v) : undefined,
+                };
             });
         }
         return db;
@@ -363,7 +355,15 @@ export class ManagerTableComponent implements OnInit {
     }
 
     async clickTable(element: any, step: number) {
-        if (this.editMode) {
+        if (this.parkingMode) {
+            if (step === 2) {
+            }
+            return;
+        }
+        if (this.deleteMode || this.SMSMode) {
+            element.checked = !element.checked;
+            this.updateTotalChecked(element);
+        } else {
             let model = JSON.parse(JSON.stringify(this.db.filter((v) => v.id === element.id)[0]));
             if (step === 3 && model["예약유형"] === "식사") {
                 //평상 타입이면 3, 식사 타입이면 4로 가면 된다.
@@ -372,9 +372,6 @@ export class ManagerTableComponent implements OnInit {
             this.reservationService.formData$.next(model);
             this.reservationService.bookingStep$.next(step);
             this.dialog.open(ReservationDialogComponent);
-        } else if (this.deleteMode || this.SMSMode) {
-            element.checked = !element.checked;
-            this.updateTotalChecked(element);
         }
     }
 
@@ -382,6 +379,36 @@ export class ManagerTableComponent implements OnInit {
         this.reservationService.formData$.next({ 상태: "대기" });
         this.reservationService.bookingStep$.next(1);
         this.dialog.open(ReservationDialogComponent);
+    }
+
+    setParkingMode() {
+        this.parkingMode = !this.parkingMode;
+        console.log("주차모드", this.parkingMode);
+        if (this.parkingMode) {
+            //columns 업뎃
+            this._previousDisplayedColumns = this.displayedColumns;
+            this.displayedColumns = ["car", "name", "type", "more", "tel", "managerMemo"];
+            //필터 수정 : 오늘날짜, 예약,방문 상태
+            this.filter.hideVisitedCar = false;
+            this.filter.date = [Moment(), Moment()];
+            this.filter.states = ["예약", "방문"];
+            this.setList();
+        } else {
+            //columns 복귀
+            this.displayedColumns = this._previousDisplayedColumns;
+            this._previousDisplayedColumns = [];
+            //필터 복귀
+            this.initFilterAndList();
+        }
+    }
+    private _previousDisplayedColumns: string[] = [];
+
+    onClickCarNumber(element: Table, index: number) {
+        if (this.parkingMode) {
+            let model = this.db.filter((v) => v.id === element.id)[0];
+            model["차량방문"][index] = !model["차량방문"][index];
+            this.DBService.set(model);
+        }
     }
 
     changeDeleteMode() {
@@ -408,17 +435,6 @@ export class ManagerTableComponent implements OnInit {
         let model = this.db.filter((v) => v.id === element.id)[0];
         model["입금확인"] = true;
         this.DBService.edit(model);
-    }
-
-    telList(): string {
-        let tels = "";
-        this.dataSource.filteredData.forEach((filteredData) => {
-            const data = this.db.filter((originalData) => originalData.id === filteredData.id);
-            if (data[0]) {
-                tels += data[0]["전화번호"] + ",";
-            }
-        });
-        return tels;
     }
 
     updateAllDataChecked(value?: boolean) {
