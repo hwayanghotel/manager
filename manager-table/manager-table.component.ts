@@ -171,7 +171,7 @@ export class ManagerTableComponent implements OnInit {
                 cars: model["차량번호"],
                 visitedCars: model["차량방문"],
                 tel: model["전화번호"],
-                money: model["입금확인"] ? undefined : this.reservationService.getReservationCost(model),
+                money: this.reservationService.getReservationCost(model),
                 checked: false,
                 managerMemo: model["관리자메모"],
             };
