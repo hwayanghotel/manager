@@ -35,11 +35,11 @@ export class ManagerComponent implements OnInit {
         this.DBService.customerDB$.subscribe((db) => {
             this._setIndicators(db);
             this._setCalenderDB(db);
-
-            // setTimeout(() => {
-            //     this.uploader.uploadPensionDB(false);
-            // }, 5000);
         });
+        // setTimeout(() => {
+        //     this.uploader.uploadPensionDB(true);
+        //     this.uploader.uploadOtherBookingInfo(true);
+        // }, 5000);
     }
 
     private _setCalenderDB(db: IUserDB[]) {
