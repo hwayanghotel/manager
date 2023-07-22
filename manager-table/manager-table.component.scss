@@ -48,7 +48,12 @@ a {
 }
 
 .needToCheck {
-    color: red;
+    background-color: red;
+    // color: red;
+}
+
+.visit {
+    background-color: rgb(147, 147, 147);
 }
 
 span.visited {

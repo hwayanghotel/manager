@@ -1,10 +1,11 @@
-import { Component, OnInit, ViewChild } from "@angular/core";
+import { Component, OnInit, TemplateRef, ViewChild } from "@angular/core";
 import { MatTabGroup } from "@angular/material/tabs";
 import { ActivatedRoute } from "@angular/router";
 import { ManagerService } from "manager/manager.service";
 import { DBService, IUserDB } from "reservation/service/DB.service";
 import * as Moment from "moment";
 import { UploaderService } from "reservation/service/uploader.service";
+import { MatDialog } from "@angular/material/dialog";
 
 @Component({
     selector: "manager",
@@ -13,8 +14,9 @@ import { UploaderService } from "reservation/service/uploader.service";
 })
 export class ManagerComponent implements OnInit {
     @ViewChild(MatTabGroup) tabGroup: MatTabGroup;
+    @ViewChild("CalendarDialog") CalendarDialog: TemplateRef<any>;
     open: boolean = true;
-    today = Moment().format("YYYY-MM-DD");
+    selectedDate = Moment();
     nyBaeksuk = 0;
     baeksuk = 0;
     mushroom = 0;
@@ -26,15 +28,19 @@ export class ManagerComponent implements OnInit {
     guestFlatBench = 0;
     guestFood = 0;
 
+    customerDB: IUserDB[] = [];
+
     constructor(
         private route: ActivatedRoute,
         private DBService: DBService,
         private managerService: ManagerService,
-        private uploader: UploaderService
+        private uploader: UploaderService,
+        private dialog: MatDialog
     ) {
         this.DBService.customerDB$.subscribe((db) => {
-            this._setIndicators(db);
-            this._setCalenderDB(db);
+            this.customerDB = db;
+            this._setCalenderDB();
+            this.setIndicators();
         });
         // setTimeout(() => {
         //     this.uploader.uploadPensionDB(true);
@@ -42,8 +48,8 @@ export class ManagerComponent implements OnInit {
         // }, 5000);
     }
 
-    private _setCalenderDB(db: IUserDB[]) {
-        if (db.length && !this._needToUpdate) {
+    private _setCalenderDB() {
+        if (this.customerDB.length && !this._needToUpdate) {
             this._needToUpdate = true;
             setTimeout(() => {
                 this.uploader.uploadCalenderDB();
@@ -53,9 +59,13 @@ export class ManagerComponent implements OnInit {
     }
     private _needToUpdate: boolean = false;
 
-    private _setIndicators(db: IUserDB[]) {
-        const dailyData = db
-            .filter((v) => v["예약일"] === this.today)
+    get showSelectedDate(): string {
+        return this.selectedDate.format("YY-MM-DD");
+    }
+
+    setIndicators() {
+        const dailyData = this.customerDB
+            .filter((v) => v["예약일"] === this.selectedDate.format("YYYY-MM-DD"))
             .filter((v) => ["예약", "방문"].includes(v["상태"]));
 
         this.nyBaeksuk = 0;
@@ -107,5 +117,9 @@ export class ManagerComponent implements OnInit {
 
     selectTab() {
         this.tabGroup.selectedIndex = 1;
+    }
+
+    openCalendarDialog() {
+        this.dialog.open(this.CalendarDialog);
     }
 }

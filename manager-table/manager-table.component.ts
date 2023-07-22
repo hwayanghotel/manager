@@ -47,19 +47,7 @@ ManagerFilter.date[0] = Moment(ManagerFilter.date[0]);
 })
 export class ManagerTableComponent implements OnInit {
     @ViewChild(MatSort) sort: MatSort;
-    displayedColumns: string[] = [
-        "checked",
-        "status",
-        "date",
-        "type",
-        "name",
-        "order",
-        "more",
-        "car",
-        "tel",
-        "managerMemo",
-        "memo",
-    ];
+    displayedColumns: string[] = ["checked", "status", "date", "type", "name", "order", "more", "car", "tel", "managerMemo", "memo"];
     dataSource: MatTableDataSource<any>;
     db: IUserDB[] = [];
     filter = ManagerFilter;
@@ -69,11 +57,7 @@ export class ManagerTableComponent implements OnInit {
     parkingMode: boolean = false;
     totalChecked: boolean = false;
 
-    constructor(
-        private DBService: DBService,
-        private reservationService: ReservationService,
-        private dialog: MatDialog
-    ) {
+    constructor(private DBService: DBService, private reservationService: ReservationService, private dialog: MatDialog) {
         this.DBService.customerDB$.subscribe((db) => {
             this.db = db as IUserDB[];
             this.db.sort((a, b) => this._sortList(a, b));
@@ -262,10 +246,10 @@ export class ManagerTableComponent implements OnInit {
     private _getFilteredDB(): IUserDB[] {
         let db: IUserDB[] = JSON.parse(JSON.stringify(this.db));
         if (this.filter.date[0]) {
-            db = db.filter((v) => v["만료일"] >= this.filter.date[0].format("YYYY-MM-DD"));
+            db = db.filter((v) => v["만료일"] >= this.filter.date[0].format("YYYY-MM-DD") || v["예약일"] >= this.filter.date[0].format("YYYY-MM-DD"));
         }
         if (this.filter.date[1]) {
-            db = db.filter((v) => Moment(v["만료일"]) <= this.filter.date[1]);
+            db = db.filter((v) => v["만료일"] <= this.filter.date[1].format("YYYY-MM-DD") || v["예약일"] <= this.filter.date[1].format("YYYY-MM-DD"));
         }
         if (this.filter.states.length > 0) {
             db = db.filter((v) => this.filter.states.includes(v["상태"]));
@@ -274,10 +258,7 @@ export class ManagerTableComponent implements OnInit {
             db = db.map((user) => {
                 return {
                     ...user,
-                    차량번호:
-                        user["차량번호"] && user["차량방문"]
-                            ? user["차량번호"].filter((v, index) => !user["차량방문"][index])
-                            : undefined,
+                    차량번호: user["차량번호"] && user["차량방문"] ? user["차량번호"].filter((v, index) => !user["차량방문"][index]) : undefined,
                     차량방문: user["차량방문"] ? user["차량방문"].filter((v) => !v) : undefined,
                 };
             });
@@ -291,9 +272,7 @@ export class ManagerTableComponent implements OnInit {
         let dateText: string = startDate.format("M/D");
         if (model["이용박수"]) {
             const endDate = Moment(model["예약일"]).add(model["이용박수"], "days");
-            dateText = `${dateText}~${endDate.format(startDate.month() === endDate.month() ? "D" : "M/D")}(${
-                model["이용박수"]
-            })`;
+            dateText = `${dateText}~${endDate.format(startDate.month() === endDate.month() ? "D" : "M/D")}(${model["이용박수"]})`;
         }
         if (model["예약시간"]) {
             dateText = `${dateText} ${model["예약시간"]}시`;
@@ -485,17 +464,11 @@ export class ManagerTableComponent implements OnInit {
         let url = `sms:${tels}`;
 
         if (type === "BeforeVisit") {
-            url += `?body=${encodeURIComponent(
-                SMSTextBeforeVisit.replace("NAME님 ", "").replace("URIRESOURCE", "type=search")
-            )}`;
+            url += `?body=${encodeURIComponent(SMSTextBeforeVisit.replace("NAME님 ", "").replace("URIRESOURCE", "type=search"))}`;
         } else if (type === "Confirm") {
-            url += `?body=${encodeURIComponent(
-                SMStextForConfirm.replace("NAME님 ", "").replace("TYPE ", "").replace("URIRESOURCE", "type=search")
-            )}`;
+            url += `?body=${encodeURIComponent(SMStextForConfirm.replace("NAME님 ", "").replace("TYPE ", "").replace("URIRESOURCE", "type=search"))}`;
         } else if (type === "Account") {
-            url += `?body=${encodeURIComponent(
-                SMStextForAccount.replace("NAME님 ", "").replace("- 예약금: MONEY원", "")
-            )}`;
+            url += `?body=${encodeURIComponent(SMStextForAccount.replace("NAME님 ", "").replace("- 예약금: MONEY원", ""))}`;
         } else if (type === "Booking") {
             url += `?body=${encodeURIComponent(SMStextForBooking)}`;
         }
@@ -508,18 +481,12 @@ export class ManagerTableComponent implements OnInit {
 
     getSMSText(element: Table, type?: "BeforeVisit" | "Account" | "Confirm"): string {
         if (type === "Account") {
-            return encodeURIComponent(
-                SMStextForAccount.replace("NAME", element.name).replace("MONEY", String(element.money))
-            );
+            return encodeURIComponent(SMStextForAccount.replace("NAME", element.name).replace("MONEY", String(element.money)));
         } else if (type === "BeforeVisit") {
-            return encodeURIComponent(
-                SMSTextBeforeVisit.replace("NAME", element.name).replace("URIRESOURCE", `id=${element.id}`)
-            );
+            return encodeURIComponent(SMSTextBeforeVisit.replace("NAME", element.name).replace("URIRESOURCE", `id=${element.id}`));
         } else if (type === "Confirm") {
             return encodeURIComponent(
-                SMStextForConfirm.replace("NAME", element.name)
-                    .replace("TYPE", String(element.type))
-                    .replace("URIRESOURCE", `id=${element.id}`)
+                SMStextForConfirm.replace("NAME", element.name).replace("TYPE", String(element.type)).replace("URIRESOURCE", `id=${element.id}`)
             );
         }
         return "";
@@ -528,7 +495,7 @@ export class ManagerTableComponent implements OnInit {
 
 const SMSTextBeforeVisit = `NAME님 안녕하세요. 능운대펜션입니다. 방문일이 다가와 연락드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-https://hwayanghotel.github.io/#/reservation?URIRESOURCE
+http://192.168.219.114:4200/#/reservation?URIRESOURCE
 감사합니다.`;
 
 const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. 예약을 위한 입금 정보를 안내드립니다.
@@ -538,11 +505,11 @@ const SMStextForAccount = `NAME님 안녕하세요. 능운대펜션입니다. �
 
 const SMStextForConfirm = `NAME님 안녕하세요. 능운대펜션입니다. TYPE 예약 확정되어 안내드립니다.
 필요한 경우, 아래 링크에 접속하시어 <차량등록>, <식사예약> 등 사전 정보를 입력해주시기 바랍니다.
-https://hwayanghotel.github.io/#/reservation?URIRESOURCE
+http://192.168.219.114:4200/#/reservation?URIRESOURCE
 감사합니다.`;
 
 const SMStextForBooking = `안녕하세요. 능운대펜션입니다.
 아래 링크를 통해 <객실>, <평상>, <식사> 예약이 가능합니다.
 공원 내 입차를 희망하시면, <차량정보>도 함께 적어주세요!
-https://hwayanghotel.github.io/#/reservation
+http://192.168.219.114:4200/#/reservation
 감사합니다.`;

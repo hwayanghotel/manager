@@ -50,26 +50,26 @@ export class ManagerCalendarComponent extends CalendarComponent {
         this.cars = [];
         data.forEach((v) => {
             const index = v["예약일"];
-            this.cars[index] = 0;
             if (this.cars[index]) {
                 this.cars[index] += v["차량번호"] && v["차량번호"].length;
             } else {
                 this.cars[index] = v["차량번호"] && v["차량번호"].length;
             }
+            if (v["이용박수"]) {
+                for (let days = 1; days < v["이용박수"]; days++) {
+                    const index = Moment(v["예약일"]).add(days, "days").format("YYYY-MM-DD");
+                    if (this.cars[index]) {
+                        this.cars[index] += v["차량번호"] && v["차량번호"].length;
+                    } else {
+                        this.cars[index] = v["차량번호"] && v["차량번호"].length;
+                    }
+                }
+            }
         });
     }
 
     private _setDailyRoom(data: IUserDB[]) {
-        const colors = [
-            "LavenderBlush",
-            "LightCyan",
-            "LightGoldenRodYellow",
-            "LightGreen",
-            "LightPink",
-            "LightSalmon",
-            "LightSkyBlue",
-            "LightSteelBlue",
-        ];
+        const colors = ["LavenderBlush", "LightCyan", "LightGoldenRodYellow", "LightGreen", "LightPink", "LightSalmon", "LightSkyBlue", "LightSteelBlue"];
         let colorIndex = 0;
         let colorFlag = false;
 
@@ -77,10 +77,7 @@ export class ManagerCalendarComponent extends CalendarComponent {
         data.forEach((v) => {
             this.roomTypes.forEach((room) => {
                 let bgColor: string = "";
-                if (
-                    v["이용박수"] > 1 ||
-                    ["능운대", "학소대", "와룡암", "첨성대"].filter((room) => v["객실"].includes(room)).length > 1
-                ) {
+                if (v["이용박수"] > 1 || ["능운대", "학소대", "와룡암", "첨성대"].filter((room) => v["객실"].includes(room)).length > 1) {
                     bgColor = colors[colorIndex];
                     colorFlag = true;
                 }
