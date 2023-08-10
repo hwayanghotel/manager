@@ -4,10 +4,6 @@
     display: flex;
     flex-direction: column;
 
-    p {
-        font-size: 0.8rem;
-    }
-
     .month-info {
         display: flex;
         justify-content: center;
@@ -74,8 +70,8 @@
 
 p.content {
     text-align: center;
-    font-size: 0.8rem;
-    color: #5eb917;
+    font-size: 0.9rem;
+    color: green;
     margin: 0.5rem 0.1rem;
     cursor: pointer;
 

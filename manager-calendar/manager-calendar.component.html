@@ -46,8 +46,8 @@
 						</span>
 					</p>
 				</ng-container>
-				<p class="content" *ngIf="filter.car">
-					주차<span>{{carRatio(date.date)}}</span>
+				<p class="content" *ngIf="filter.car" [class.expired]="carRatio(date.date).isFull">
+					주차<span>{{carRatio(date.date).ratio}}</span>
 				</p>
 			</ng-container>
 		</div>

@@ -50,10 +50,10 @@ export class ManagerCalendarComponent extends CalendarComponent {
         this.cars = [];
         data.forEach((v) => {
             const index = v["예약일"];
-            if (this.cars[index]) {
-                this.cars[index] += v["차량번호"] && v["차량번호"].length;
-            } else {
-                this.cars[index] = v["차량번호"] && v["차량번호"].length;
+            if (this.cars[index] && v["차량번호"]) {
+                this.cars[index] += v["차량번호"].length;
+            } else if (v["차량번호"]) {
+                this.cars[index] = v["차량번호"].length;
             }
             if (v["이용박수"]) {
                 for (let days = 1; days < v["이용박수"]; days++) {
@@ -111,10 +111,10 @@ export class ManagerCalendarComponent extends CalendarComponent {
         this.moveTable.emit();
     }
 
-    carRatio(date: number): string {
+    carRatio(date: number): { ratio: string; isFull: boolean } {
         const today = Moment(this.selectedDate).date(date).format("YYYY-MM-DD");
         const cars = this.cars[today] ? this.cars[today] : 0;
-        return ` (${cars}/${MAX_RESERVATION["주차"]})`;
+        return { ratio: ` (${cars}/${MAX_RESERVATION["주차"]})`, isFull: cars >= MAX_RESERVATION["주차"] };
     }
 
     getRoomInfo(date: number, room: string): string {
