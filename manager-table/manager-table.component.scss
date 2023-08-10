@@ -53,9 +53,15 @@ a {
 }
 
 .visit {
-    background-color: rgb(147, 147, 147);
+    color: white;
+    background-color: rgb(19, 83, 194);
 }
 
 span.visited {
     text-decoration: line-through;
+}
+
+.today {
+    color: white;
+    background-color: rgb(68, 110, 184);
 }

@@ -79,6 +79,20 @@ export class ManagerTableComponent implements OnInit {
         return userAgent.includes("Mobile") && !userAgent.includes("iPad") && !userAgent.includes("tablet");
     }
 
+    isToday(date: string): boolean {
+        if (!date.includes("~")) {
+            return date.includes(this._today.format("M/D"));
+        }
+        if (Number(date.split("/")[0]) !== this._today.month() + 1) {
+            return false;
+        }
+        return (
+            Number(date.split("/")[1].split("(")[0].split("~")[0]) <= this._today.date() &&
+            Number(date.split("/")[1].split("(")[0].split("~")[1]) >= this._today.date()
+        );
+    }
+    private _today = Moment();
+
     get statePrepare(): boolean {
         return ManagerFilter.states.includes("대기");
     }
@@ -93,10 +107,10 @@ export class ManagerTableComponent implements OnInit {
         this._setState(value, "수정");
     }
 
-    get stateComplete(): boolean {
+    get stateBooking(): boolean {
         return ManagerFilter.states.includes("예약");
     }
-    set stateComplete(value: boolean) {
+    set stateBooking(value: boolean) {
         this._setState(value, "예약");
     }
 
@@ -105,6 +119,13 @@ export class ManagerTableComponent implements OnInit {
     }
     set stateVisited(value: boolean) {
         this._setState(value, "방문");
+    }
+
+    get stateComplete(): boolean {
+        return ManagerFilter.states.includes("완료");
+    }
+    set stateComplete(value: boolean) {
+        this._setState(value, "완료");
     }
 
     get stateCancel(): boolean {
@@ -223,13 +244,14 @@ export class ManagerTableComponent implements OnInit {
             return 1;
         }
 
-        // 2) "상태"가 "대기" > "수정" > "예약" > "방문" > "취소" 순서로 정렬
+        // 2) "상태"가 "대기" > "수정" > "예약" > "방문" > "완료" > "취소" 순서로 정렬
         const statusOrder = {
             대기: 0,
             수정: 1,
             예약: 2,
             방문: 3,
-            취소: 4,
+            완료: 4,
+            취소: 5,
         };
         const statusA = statusOrder[a["상태"]];
         const statusB = statusOrder[b["상태"]];
@@ -370,7 +392,7 @@ export class ManagerTableComponent implements OnInit {
             //필터 수정 : 오늘날짜, 예약,방문 상태
             this.filter.hideVisitedCar = false;
             this.filter.date = [Moment(), Moment()];
-            this.filter.states = ["예약", "방문"];
+            this.filter.states = ["예약", "방문", "완료"];
             this.setList();
         } else {
             //columns 복귀

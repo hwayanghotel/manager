@@ -88,8 +88,9 @@
 				<mat-card-subtitle>상태 선택</mat-card-subtitle>
 				<mat-checkbox [(ngModel)]="statePrepare">대기</mat-checkbox>
 				<mat-checkbox [(ngModel)]="stateEdit">수정</mat-checkbox>
-				<mat-checkbox [(ngModel)]="stateComplete">예약</mat-checkbox>
+				<mat-checkbox [(ngModel)]="stateBooking">예약</mat-checkbox>
 				<mat-checkbox [(ngModel)]="stateVisited">방문</mat-checkbox>
+				<mat-checkbox [(ngModel)]="stateComplete">완료</mat-checkbox>
 				<mat-checkbox [(ngModel)]="stateCancel">취소</mat-checkbox>
 			</div>
 		</div>
@@ -130,6 +131,7 @@
 			<mat-menu #menu="matMenu">
 				<button mat-menu-item *ngIf="element.status !== '예약'" (click)="clickStatus(element, '예약')">예약</button>
 				<button mat-menu-item *ngIf="element.status !== '방문'" (click)="clickStatus(element, '방문')">방문</button>
+				<button mat-menu-item *ngIf="element.status !== '완료'" (click)="clickStatus(element, '완료')">완료</button>
 				<button mat-menu-item *ngIf="element.status !== '대기'" (click)="clickStatus(element, '대기')">대기</button>
 				<button mat-menu-item *ngIf="element.status !== '수정'" (click)="clickStatus(element, '수정')">수정</button>
 				<button mat-menu-item *ngIf="element.status !== '취소'" (click)="clickStatus(element, '취소')">취소</button>
@@ -139,7 +141,8 @@
 
 	<ng-container matColumnDef="date">
 		<th mat-header-cell *matHeaderCellDef mat-sort-header>날짜</th>
-		<td mat-cell *matCellDef="let element" (click)="clickTable(element, 1)">
+		<td mat-cell *matCellDef="let element" (click)="clickTable(element, 1)"
+			[class.today]="isToday(element.date)">
 			<span *ngIf="element.changeMode && element.changeMode.date"
 				  class="needToCheck">{{element.changeMode.date}}<br /></span>
 			{{element.date}}

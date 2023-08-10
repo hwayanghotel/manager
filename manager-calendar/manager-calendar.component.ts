@@ -40,7 +40,7 @@ export class ManagerCalendarComponent extends CalendarComponent {
     ) {
         super(holidayService, DBService, dialog, reservationService);
         this.DBService.customerDB$.subscribe((data) => {
-            const filteredData = data.filter((v) => ["예약", "방문"].includes(v["상태"]));
+            const filteredData = data.filter((v) => ["예약", "방문", "완료"].includes(v["상태"]));
             this._setDailyCarNumber(filteredData);
             this._setDailyRoom(filteredData.filter((v) => v["객실"]));
         });

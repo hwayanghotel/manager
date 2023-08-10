@@ -66,7 +66,7 @@ export class ManagerComponent implements OnInit {
     setIndicators() {
         const dailyData = this.customerDB
             .filter((v) => v["예약일"] === this.selectedDate.format("YYYY-MM-DD"))
-            .filter((v) => ["예약", "방문"].includes(v["상태"]));
+            .filter((v) => ["예약", "방문", "완료"].includes(v["상태"]));
 
         this.nyBaeksuk = 0;
         this.baeksuk = 0;
