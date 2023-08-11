@@ -6,6 +6,7 @@ import * as Moment from "moment";
 import { DBService, IUserDB } from "reservation/service/DB.service";
 import { MAX_RESERVATION, ReservationService } from "reservation/service/reservation.service";
 import { MatDialog } from "@angular/material/dialog";
+import { ManagerService } from "manager/manager.service";
 
 interface IRoomInfo {
     [room: string]: {
@@ -36,7 +37,8 @@ export class ManagerCalendarComponent extends CalendarComponent {
         override holidayService: HolidayService,
         override DBService: DBService,
         override dialog: MatDialog,
-        override reservationService: ReservationService
+        override reservationService: ReservationService,
+        private managerService: ManagerService
     ) {
         super(holidayService, DBService, dialog, reservationService);
         this.DBService.customerDB$.subscribe((data) => {
@@ -108,6 +110,7 @@ export class ManagerCalendarComponent extends CalendarComponent {
 
     details(date: any) {
         ManagerFilter.date[0] = ManagerFilter.date[1] = Moment(`${this.currentYear}-${this.currentMonth}-${date.date}`);
+        this.managerService.controlFilter.next(ManagerFilter.date[0]);
         this.moveTable.emit();
     }
 

@@ -6,6 +6,7 @@ import * as Moment from "moment";
 import { DBService, IUserDB } from "reservation/service/DB.service";
 import { MatDialog } from "@angular/material/dialog";
 import { ReservationDialogComponent } from "reservation/reservation-dialog/reservation-dialog.component";
+import { ManagerService } from "manager/manager.service";
 
 interface Table {
     id?: string;
@@ -57,13 +58,23 @@ export class ManagerTableComponent implements OnInit {
     parkingMode: boolean = false;
     totalChecked: boolean = false;
 
-    constructor(private DBService: DBService, private reservationService: ReservationService, private dialog: MatDialog) {
+    constructor(
+        private DBService: DBService,
+        private reservationService: ReservationService,
+        private managerService: ManagerService,
+        private dialog: MatDialog
+    ) {
         this.DBService.customerDB$.subscribe((db) => {
             this.db = db as IUserDB[];
             this.db.sort((a, b) => this._sortList(a, b));
             this.setList();
         });
         this.filter = ManagerFilter;
+        this.managerService.controlFilter.subscribe((v) => {
+            if (v) {
+                this.applyFilter();
+            }
+        });
     }
 
     ngOnInit(): void {
