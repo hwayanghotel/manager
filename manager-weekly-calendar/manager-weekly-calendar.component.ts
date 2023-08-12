@@ -29,8 +29,12 @@ const ELEMENT_DATA: PeriodicElement[] = [
     styleUrls: ["./manager-weekly-calendar.component.scss"],
 })
 export class ManagerWeeklyCalendarComponent {
-    startDate = Moment().subtract(Moment().day() - 1, "days");
-    endDate = Moment().add(7 - Moment().day(), "days");
+    startDate = Moment()
+        .startOf("day")
+        .subtract((Moment().day() - 1 + 7) % 7, "day");
+    endDate = Moment()
+        .startOf("day")
+        .add((7 - Moment().day()) % 7, "days");
     holidayList = {
         columns: false,
         monday: false,
@@ -75,14 +79,10 @@ export class ManagerWeeklyCalendarComponent {
         return `${this.startDate.format("YYYY.M.D")}(월) ~ ${this.endDate.format("M.D")}(일)`;
     }
 
-    displayedColumns: string[] = ["columns", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
-    dataSource = ELEMENT_DATA;
-
-    getText(column: string): string {
-        if (column === "columns") return "";
+    getDate(column: string): number {
+        if (column === "columns") return undefined;
         const index = this.displayedColumns.indexOf(column);
-        return `${this.endDate.date() - 7 + index > 0 ? this.endDate.date() - 7 + index : this.startDate.date() + index - 1}
-            (${column.substring(0, 3).toUpperCase()})`;
+        return this.endDate.date() - 7 + index > 0 ? this.endDate.date() - 7 + index : this.startDate.date() + index - 1;
     }
 
     isHoliday(day: string): boolean {
