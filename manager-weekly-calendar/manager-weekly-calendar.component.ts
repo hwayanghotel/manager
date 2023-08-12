@@ -2,25 +2,25 @@ import { Component } from "@angular/core";
 import * as Moment from "moment";
 import { HolidayService } from "reservation/service/holiday.service";
 
-export interface PeriodicElement {
+export interface WeeklyElement {
     columns: string;
-    tuesday: string;
-    monday: string;
-    wednesday: string;
-    thursday: string;
-    friday: string;
-    saturday: string;
-    sunday: string;
+    monday: string[];
+    tuesday: string[];
+    wednesday: string[];
+    thursday: string[];
+    friday: string[];
+    saturday: string[];
+    sunday: string[];
 }
 
-const ELEMENT_DATA: PeriodicElement[] = [
-    { columns: "능운대", monday: "", tuesday: "", wednesday: "", thursday: "", friday: "", saturday: "", sunday: "" },
-    { columns: "학소대", monday: "", tuesday: "", wednesday: "", thursday: "", friday: "", saturday: "", sunday: "" },
-    { columns: "와룡암", monday: "", tuesday: "", wednesday: "", thursday: "", friday: "", saturday: "", sunday: "" },
-    { columns: "첨성대", monday: "", tuesday: "", wednesday: "", thursday: "", friday: "", saturday: "", sunday: "" },
-    { columns: "평상", monday: "", tuesday: "", wednesday: "", thursday: "", friday: "", saturday: "", sunday: "" },
-    { columns: "식사", monday: "", tuesday: "", wednesday: "", thursday: "", friday: "", saturday: "", sunday: "" },
-    { columns: "비고", monday: "", tuesday: "", wednesday: "", thursday: "", friday: "", saturday: "", sunday: "" },
+const WEEKLY_DATA: WeeklyElement[] = [
+    { columns: "능운대", monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] },
+    { columns: "학소대", monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] },
+    { columns: "와룡암", monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] },
+    { columns: "첨성대", monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] },
+    { columns: "평상", monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] },
+    { columns: "식사", monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] },
+    { columns: "비고", monday: [], tuesday: [], wednesday: [], thursday: [], friday: [], saturday: [], sunday: [] },
 ];
 
 @Component({
@@ -45,7 +45,10 @@ export class ManagerWeeklyCalendarComponent {
         saturday: true,
         sunday: true,
     };
-    constructor(private holidayService: HolidayService) {
+
+    displayedColumns = Object.keys(WEEKLY_DATA[0]);
+    dataSource = WEEKLY_DATA;
+
         this._setHolidayList();
     }
 
