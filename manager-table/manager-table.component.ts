@@ -65,8 +65,7 @@ export class ManagerTableComponent implements OnInit {
         private dialog: MatDialog
     ) {
         this.DBService.customerDB$.subscribe((db) => {
-            this.db = db as IUserDB[];
-            this.db.sort((a, b) => this._sortList(a, b));
+            this.db = db;
             this.setList();
         });
         this.filter = ManagerFilter;
@@ -242,38 +241,6 @@ export class ManagerTableComponent implements OnInit {
         });
         this.dataSource = new MatTableDataSource(result);
         this.dataSource.sort = this.sort;
-    }
-
-    private _sortList(a: IUserDB, b: IUserDB) {
-        // 1) "날짜"가 빠를수록 정렬
-        const dateA = new Date(a["예약일"]);
-        const dateB = new Date(b["예약일"]);
-        if (dateA < dateB) {
-            return -1;
-        }
-        if (dateA > dateB) {
-            return 1;
-        }
-
-        // 2) "상태"가 "대기" > "수정" > "예약" > "방문" > "완료" > "취소" 순서로 정렬
-        const statusOrder = {
-            대기: 0,
-            수정: 1,
-            예약: 2,
-            방문: 3,
-            완료: 4,
-            취소: 5,
-        };
-        const statusA = statusOrder[a["상태"]];
-        const statusB = statusOrder[b["상태"]];
-        if (statusA < statusB) {
-            return -1;
-        }
-        if (statusA > statusB) {
-            return 1;
-        }
-
-        return 0; // 동일한 경우 유지
     }
 
     private _getFilteredDB(): IUserDB[] {
