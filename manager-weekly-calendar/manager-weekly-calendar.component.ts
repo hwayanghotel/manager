@@ -29,57 +29,63 @@ const ELEMENT_DATA: PeriodicElement[] = [
     styleUrls: ["./manager-weekly-calendar.component.scss"],
 })
 export class ManagerWeeklyCalendarComponent {
-    startDate = Moment();
+    startDate = Moment().subtract(Moment().day() - 1, "days");
+    endDate = Moment().add(7 - Moment().day(), "days");
+    holidayList = {
+        columns: false,
+        monday: false,
+        tuesday: false,
+        wednesday: false,
+        thursday: false,
+        friday: false,
+        saturday: true,
+        sunday: true,
+    };
     constructor(private holidayService: HolidayService) {
-        this._setStartDate();
+        this._setHolidayList();
     }
 
-    private _setStartDate() {
-        this.startDate.date(this.startDate.date() - this.startDate.day() + 1);
-        console.warn("_setStartDate", this.startDate.format("M/D"));
+    private async _setHolidayList() {
+        let holidayList = await this.holidayService.getHolidays(this.startDate);
+        holidayList = holidayList.filter((v) => v >= this.startDate.date() && v < this.startDate.date() + 7);
+        if (this.startDate.month() != this.endDate.month()) {
+            let holidayListNextMonth = (await this.holidayService.getHolidays(this.endDate)).filter((v) => v <= this.endDate.date());
+            holidayList.push(...holidayListNextMonth);
+        }
+
+        this.holidayList = {
+            columns: false,
+            monday: holidayList.includes(this.startDate.date()),
+            tuesday: holidayList.includes(Moment(this.startDate).add(1, "days").date()),
+            wednesday: holidayList.includes(Moment(this.startDate).add(2, "days").date()),
+            thursday: holidayList.includes(Moment(this.startDate).add(3, "days").date()),
+            friday: holidayList.includes(Moment(this.startDate).add(4, "days").date()),
+            saturday: true,
+            sunday: true,
+        };
     }
 
     moveWeek(move: number) {
-        this.startDate.date(this.startDate.date() + 7 * move);
-        console.warn("moveWeek", this.startDate.date());
+        this.startDate.add(7 * move, "days");
+        this.endDate.add(7 * move, "days");
+        this._setHolidayList();
     }
 
     get currentWeek(): string {
-        return `${this.startDate.format("YYYY.M.D")}(월) ~ ${this.startDate.month() + 1}.${this.startDate.date() + 6}(일)`;
+        return `${this.startDate.format("YYYY.M.D")}(월) ~ ${this.endDate.format("M.D")}(일)`;
     }
 
     displayedColumns: string[] = ["columns", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
     dataSource = ELEMENT_DATA;
 
     getText(column: string): string {
-        if (column === "monday") {
-            return this.startDate.date() + "(월)";
-        }
-        if (column === "tuesday") {
-            return this.startDate.date() + 1 + "(화)";
-        }
-        if (column === "wednesday") {
-            return this.startDate.date() + 2 + "(수)";
-        }
-        if (column === "thursday") {
-            return this.startDate.date() + 3 + "(목)";
-        }
-        if (column === "friday") {
-            return this.startDate.date() + 4 + "(금)";
-        }
-        if (column === "saturday") {
-            return this.startDate.date() + 5 + "(토)";
-        }
-        if (column === "sunday") {
-            return this.startDate.date() + 6 + "(일)";
-        }
-        return "";
+        if (column === "columns") return "";
+        const index = this.displayedColumns.indexOf(column);
+        return `${this.endDate.date() - 7 + index > 0 ? this.endDate.date() - 7 + index : this.startDate.date() + index - 1}
+            (${column.substring(0, 3).toUpperCase()})`;
     }
 
-    async isHoliday(day: string) {
-        if (["saturday", "sunday"].includes(day)) {
-            return true;
-        }
-        return false;
+    isHoliday(day: string): boolean {
+        return (this.holidayList as any)[day];
     }
 }
