@@ -23,6 +23,9 @@
 	</mat-card>
 
 	<mat-tab-group mat-align-tabs="start">
+		<mat-tab label="주간달력" (moveTable)="selectTab()">
+			<manager-weekly-calendar></manager-weekly-calendar>
+		</mat-tab>
 		<mat-tab label="달력">
 			<manager-calendar (moveTable)="selectTab()"></manager-calendar>
 		</mat-tab>

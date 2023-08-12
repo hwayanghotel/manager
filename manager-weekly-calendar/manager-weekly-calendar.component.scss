@@ -1,0 +1,64 @@
+.border-line {
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.table-header {
+    text-align: center;
+}
+
+.mat-column-columns {
+    @extend .border-line;
+    width: 1rem;
+    font-size: 1rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+.mat-column-monday {
+    @extend .border-line;
+}
+
+.mat-column-tuesday {
+    @extend .border-line;
+}
+
+.mat-column-wednesday {
+    @extend .border-line;
+}
+
+.mat-column-thursday {
+    @extend .border-line;
+}
+
+.mat-column-friday {
+    @extend .border-line;
+}
+
+.mat-column-saturday {
+    @extend .border-line;
+}
+
+.mat-column-sunday {
+    @extend .border-line;
+}
+
+.holiday {
+    color: #e34c4c;
+}
+
+.weekly-info {
+    display: flex;
+    justify-content: center;
+
+    button {
+        background-color: transparent;
+        border: none;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    p {
+        font-size: 1rem;
+        margin: 0.4rem 1rem;
+    }
+}
