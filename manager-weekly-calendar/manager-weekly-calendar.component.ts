@@ -1,5 +1,6 @@
 import { Component } from "@angular/core";
 import * as Moment from "moment";
+import { DBService, IUserDB } from "reservation/service/DB.service";
 import { HolidayService } from "reservation/service/holiday.service";
 
 export interface WeeklyElement {
@@ -11,6 +12,10 @@ export interface WeeklyElement {
     friday: string[];
     saturday: string[];
     sunday: string[];
+}
+
+enum Columns {
+    능운대, 학소대, 와룡암, 첨성대, 평상, 식사, 비고;
 }
 
 const WEEKLY_DATA: WeeklyElement[] = [
@@ -49,7 +54,39 @@ export class ManagerWeeklyCalendarComponent {
     displayedColumns = Object.keys(WEEKLY_DATA[0]);
     dataSource = WEEKLY_DATA;
 
+    private db: IUserDB[] = [];
+    constructor(private holidayService: HolidayService, private DBService: DBService) {
         this._setHolidayList();
+        setTimeout(() => {
+            this.DBService.customerDB$.subscribe((db) => {
+                this.db = db.filter((v) => ["예약", "방문", "완료"].includes(v["상태"]));
+                this._setWeeklyData();
+            });
+        }, 2000);
+    }
+
+    private _setWeeklyData() {
+        const db = this.db.filter((v) => Moment(v["예약일"]).diff(this.startDate) >= 0 && Moment(v["만료일"]).diff(this.endDate) <= 0);
+        console.warn("db", db);
+
+        this.displayedColumns.forEach((value, index) => {
+            if (value !== "columns") {
+                const now = Moment(this.startDate).add(index - 1, "days");
+                const day = now.format("dddd").toLowerCase();
+                const list = db.filter((v) => now.diff(Moment(v["예약일"])) >= 0 && now.diff(Moment(v["만료일"])) <= 0);
+                console.warn(day, value, index, now.format("M/D"), list);
+
+                list.forEach(item => {
+                    if(item["예약유형"] === "객실"){
+                        // WEEKLY_DATA[Columns[item["객실"]]]
+                    } else if(item["예약유형"] === "평상"){
+
+                    } else if(item["예약유형"] === "식사"){
+
+                    }
+                })
+            }
+        });
     }
 
     private async _setHolidayList() {
