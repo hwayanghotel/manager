@@ -3,11 +3,26 @@
 	<p>{{currentWeek}}</p>
 	<button (click)="moveWeek(+1)">&gt;</button>
 </div>
-<table mat-table [dataSource]="dataSource">
+
+<table mat-table [dataSource]="weeklyData">
 	<ng-container matColumnDef="{{column}}" *ngFor="let column of displayedColumns">
 		<th mat-header-cell *matHeaderCellDef class="table-header" [class.holiday]="isHoliday(column)">
-			{{getDate(column)}}({{column.substring(0,3).toUpperCase()}})</th>
-		<td mat-cell *matCellDef="let element"> {{element[column]}} </td>
+			<p *ngIf="column !== 'id'" [innerHTML]="column"></p>
+		</th>
+		<td mat-cell *matCellDef="let element">
+			<p *ngIf="column === 'id'" [innerHTML]="element[column]"></p>
+			<ng-container *ngIf="column !== 'id'">
+				<div *ngFor="let item of element[column]" [style.background-color]="item.bgColor">
+					<span [style.margin-right]="'0.1rem'" [innerHTML]="item.type"></span>
+					<span [innerHTML]="item.name"></span>
+					<span class="chip" *ngIf="item.ddunayo">떠</span>
+					<p [innerHTML]="item.tel"></p>
+					<p class="food" [innerHTML]="item.food"></p>
+					<p [innerHTML]="item.car"></p>
+					<p [innerHTML]="item.memo"></p>
+				</div>
+			</ng-container>
+		</td>
 	</ng-container>
 
 	<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

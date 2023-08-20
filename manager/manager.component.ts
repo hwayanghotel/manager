@@ -6,6 +6,7 @@ import { DBService, IUserDB } from "reservation/service/DB.service";
 import * as Moment from "moment";
 import { UploaderService } from "reservation/service/uploader.service";
 import { MatDialog } from "@angular/material/dialog";
+import { debounceTime } from "rxjs";
 
 @Component({
     selector: "manager",
@@ -37,7 +38,7 @@ export class ManagerComponent implements OnInit {
         private uploader: UploaderService,
         private dialog: MatDialog
     ) {
-        this.DBService.customerDB$.subscribe((db) => {
+        this.DBService.customerDB$.pipe(debounceTime(300)).subscribe((db) => {
             this.customerDB = db;
             this._setCalenderDB();
             this.setIndicators();

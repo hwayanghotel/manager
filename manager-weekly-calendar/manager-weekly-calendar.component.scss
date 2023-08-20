@@ -1,3 +1,11 @@
+:host {
+    p {
+        font-family: Roboto, sans-serif;
+        font-weight: 500;
+        margin: 0;
+    }
+}
+
 .border-line {
     border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
@@ -6,39 +14,18 @@
     text-align: center;
 }
 
-.mat-column-columns {
-    @extend .border-line;
+.mat-column-id {
     width: 1rem;
     font-size: 1rem;
     text-align: center;
-    font-weight: bold;
+
+    p {
+        font-weight: bold;
+    }
 }
 
-.mat-column-monday {
-    @extend .border-line;
-}
-
-.mat-column-tuesday {
-    @extend .border-line;
-}
-
-.mat-column-wednesday {
-    @extend .border-line;
-}
-
-.mat-column-thursday {
-    @extend .border-line;
-}
-
-.mat-column-friday {
-    @extend .border-line;
-}
-
-.mat-column-saturday {
-    @extend .border-line;
-}
-
-.mat-column-sunday {
+.mat-mdc-cell,
+.mat-mdc-header-cell {
     @extend .border-line;
 }
 
@@ -61,4 +48,18 @@
         font-size: 1rem;
         margin: 0.4rem 1rem;
     }
+}
+
+.chip {
+    margin-left: 0.3rem;
+    width: fit-content;
+    padding: 0.1rem;
+    border-radius: 40%;
+    background-color: palevioletred;
+    color: white;
+}
+
+p.food {
+    color: blue;
+    font-weight: bolder;
 }

@@ -7,6 +7,7 @@ import { DBService, IUserDB } from "reservation/service/DB.service";
 import { MatDialog } from "@angular/material/dialog";
 import { ReservationDialogComponent } from "reservation/reservation-dialog/reservation-dialog.component";
 import { ManagerService } from "manager/manager.service";
+import { debounceTime } from "rxjs";
 
 interface Table {
     id?: string;
@@ -64,7 +65,7 @@ export class ManagerTableComponent implements OnInit {
         private managerService: ManagerService,
         private dialog: MatDialog
     ) {
-        this.DBService.customerDB$.subscribe((db) => {
+        this.DBService.customerDB$.pipe(debounceTime(300)).subscribe((db) => {
             this.db = db;
             this.setList();
         });

@@ -7,13 +7,7 @@ import { DBService, IUserDB } from "reservation/service/DB.service";
 import { MAX_RESERVATION, ReservationService } from "reservation/service/reservation.service";
 import { MatDialog } from "@angular/material/dialog";
 import { ManagerService } from "manager/manager.service";
-
-interface IRoomInfo {
-    [room: string]: {
-        text: string;
-        color: string;
-    };
-}
+import { debounceTime } from "rxjs";
 
 @Component({
     selector: "manager-calendar",
@@ -41,7 +35,7 @@ export class ManagerCalendarComponent extends CalendarComponent {
         private managerService: ManagerService
     ) {
         super(holidayService, DBService, dialog, reservationService);
-        this.DBService.customerDB$.subscribe((data) => {
+        this.DBService.customerDB$.pipe(debounceTime(300)).subscribe((data) => {
             const filteredData = data.filter((v) => ["예약", "방문", "완료"].includes(v["상태"]));
             this._setDailyCarNumber(filteredData);
             this._setDailyRoom(filteredData.filter((v) => v["객실"]));
